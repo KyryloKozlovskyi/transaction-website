@@ -2,10 +2,12 @@ const { text } = require('body-parser');
 const mongoose = require('mongoose');
 
 const formSchema = new mongoose.Schema({
-  type:String,
-  name:String,
-  email:String,
-  attempts:Number,
+  name: String,
+  email: String,
+  amount: Number,
+  type: String,
+  attempts: Number,
+  fileId: mongoose.Schema.Types.ObjectId,
 });
 
 const Form = mongoose.model('forms', formSchema);
