@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const mongoose = require("mongoose");
 const multer = require("multer");
 const { GridFsStorage } = require("multer-gridfs-storage");
@@ -11,6 +12,15 @@ const app = express();
 // Middleware
 app.use(bodyParser.json());
 app.use(methodOverride("_method"));
+
+// Update CORS configuration
+const corsOptions = {
+  origin: 'http://127.0.0.1:3000',
+  methods: "GET, POST, PUT, DELETE, OPTIONS",
+  allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept"
+};
+
+app.use(cors(corsOptions));
 
 // Mongo URI
 const mongoURI =
@@ -116,6 +126,9 @@ app.get("/file/:filename", (req, res) => {
 // @route POST /submit
 // @desc  Save form data to DB
 app.post("/submit", async (req, res) => {
+  console.log("Request Headers:", req.headers); // Log request headers
+  console.log("Request Body:", req.body); // Log request body
+
   const { name, email, amount, type, attempts, fileId } = req.body;
   const newFormData = new FormData({
     name,

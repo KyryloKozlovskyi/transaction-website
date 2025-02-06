@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Form, Button, Container } from "react-bootstrap";
 import axios from "axios";
 
+const BASE_URL = "https://symmetrical-couscous-6jg77rjvqvq35574-5000.app.github.dev";
+
 const Submit = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -45,12 +47,24 @@ const Submit = () => {
     }
 
     try {
-      const fileResponse = await axios.post("/upload", data);
+      const fileResponse = await axios.post(BASE_URL + "/upload", data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       const fileId = fileResponse.data.file._id;
 
-      const formResponse = await axios.post("/submit", {
-        ...formData,
-        fileId,
+      const formResponse = await axios.post(BASE_URL + "/submit", {
+        name: formData.name,
+        email: formData.email,
+        amount: formData.amount,
+        type: formData.type,
+        attempts: formData.attempts,
+        fileId: fileId
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       console.log("Form submitted:", formResponse.data);
@@ -144,7 +158,7 @@ const Submit = () => {
               />
             </Form.Group>
             <a
-              href="http://localhost:5000/file/sample.pdf"
+              href="localhost:5000/file/sample.pdf"
               download="sample.pdf"
             >
               Download Sample PDF
