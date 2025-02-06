@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 
 // Update CORS configuration
 const corsOptions = {
-  origin: 'http://127.0.0.1:3000',
+  origin: 'https://127.0.0.1:3000',
   methods: "GET, POST, PUT, DELETE, OPTIONS",
   allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept"
 };

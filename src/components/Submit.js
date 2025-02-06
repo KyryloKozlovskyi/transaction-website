@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Form, Button, Container } from "react-bootstrap";
 import axios from "axios";
 
+const CORS_ANYWHERE = "https://cors-anywhere.herokuapp.com/";
 const BASE_URL = "https://symmetrical-couscous-6jg77rjvqvq35574-5000.app.github.dev";
 
 const Submit = () => {
@@ -47,14 +48,14 @@ const Submit = () => {
     }
 
     try {
-      const fileResponse = await axios.post(BASE_URL + "/upload", data, {
+      const fileResponse = await axios.post(CORS_ANYWHERE + BASE_URL + "/upload", data, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
       const fileId = fileResponse.data.file._id;
 
-      const formResponse = await axios.post(BASE_URL + "/submit", {
+      const formResponse = await axios.post(CORS_ANYWHERE + BASE_URL + "/submit", {
         name: formData.name,
         email: formData.email,
         amount: formData.amount,
