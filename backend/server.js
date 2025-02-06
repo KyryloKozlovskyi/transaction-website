@@ -44,6 +44,18 @@ const storage = new GridFsStorage({
 
 const upload = multer({ storage });
 
+// Define a schema for form data
+const formSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  amount: Number,
+  type: String,
+  attempts: Number,
+  fileId: mongoose.Schema.Types.ObjectId,
+});
+
+const FormData = mongoose.model("FormData", formSchema);
+
 // @route POST /upload
 // @desc  Uploads file to DB
 app.post("/upload", upload.single("file"), (req, res) => {
@@ -100,6 +112,28 @@ app.get("/file/:filename", (req, res) => {
     }
   });
 });
+
+// @route POST /submit
+// @desc  Save form data to DB
+app.post("/submit", async (req, res) => {
+  const { name, email, amount, type, attempts, fileId } = req.body;
+  const newFormData = new FormData({
+    name,
+    email,
+    amount,
+    type,
+    attempts,
+    fileId,
+  });
+
+  try {
+    const savedFormData = await newFormData.save();
+    res.json(savedFormData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // use env port or default
 const PORT = process.env.PORT || 5000;
 

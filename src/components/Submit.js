@@ -45,8 +45,15 @@ const Submit = () => {
     }
 
     try {
-      const response = await axios.post("/upload", data);
-      console.log("Form submitted:", response.data);
+      const fileResponse = await axios.post("/upload", data);
+      const fileId = fileResponse.data.file._id;
+
+      const formResponse = await axios.post("/submit", {
+        ...formData,
+        fileId,
+      });
+
+      console.log("Form submitted:", formResponse.data);
     } catch (error) {
       console.error("Error uploading file:", error);
     }

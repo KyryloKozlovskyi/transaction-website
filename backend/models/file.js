@@ -8,5 +8,5 @@ const formSchema = new mongoose.Schema({
   attempts:Number,
 });
 
-const Book = mongoose.model('forms', formSchema);
-module.exports = Book;
+const Form = mongoose.model('forms', formSchema);
+module.exports = Form;
