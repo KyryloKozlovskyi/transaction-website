@@ -1,188 +1,149 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const multer = require('multer');
-const { GridFsStorage } = require('multer-gridfs-storage');
-const Grid = require('gridfs-stream');
-const bodyParser = require('body-parser');
-const path = require('path');
-const crypto = require('crypto');
-const FormData = require('./models/file');
+// Load environment variables from .env file
+require("dotenv").config();
 
+// Server port, default 5000
+const port = process.env.SERVER_PORT || 5000;
 
-// Mongo URI
-const MONGO_URI = "mongodb+srv://admin:admin@cluster0.egsdr.mongodb.net/transactiontestdb";
+// Import required modules
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const multer = require("multer");
 
+// Initialize Express app
 const app = express();
+
+// Enable CORS for all incoming requests
+app.use(cors());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+
+// Parse incoming request bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Update CORS configuration
-const corsOptions = {
-  origin: 'https://127.0.0.1:3000',
-  methods: "GET, POST, PUT, DELETE, OPTIONS",
-  allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept"
-};
-
-app.use(cors(corsOptions));
-
-// init gfs
-let gfs;
-
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log('Connected to MongoDB');
-    // init gfs stream
-    gfs = Grid(mongoose.connection.db, mongoose.mongo);
-    gfs.collection('uploads'); // collection name
-  })
+// Connect to MongoDB using Mongoose
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("Connected to MongoDB"))
   .catch((error) => {
-    console.error('Error connecting to MongoDB:', error);
+    console.error("Error connecting to MongoDB:", error);
+    process.exit(1); // Exit the process if the database connection fails
   });
 
-// multer setup for file upload
-const storage = new GridFsStorage({
-  url: MONGO_URI,
-  file: (req, file) => {
-    return new Promise((resolve, reject) => {
-      crypto.randomBytes(16, (err, buf) => {
-        if (err) {
-          return reject(err);
-        }
-        const filename = buf.toString('hex') + path.extname(file.originalname);
-        const fileInfo = {
-          filename: filename,
-          bucketName: 'uploads'
-        };
-        resolve(fileInfo);
-      });
+// Configure Multer for handling file uploads in memory
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+const submissionSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      required: true,
+      enum: ["person", "company"],
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    file: {
+      data: Buffer,
+      contentType: String,
+      name: String,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Create Submission model
+const Submission = mongoose.model("Submission", submissionSchema);
+
+// Create submission endpoint
+app.post("/api/submit", upload.single("file"), async (req, res) => {
+  try {
+    const { type, name, email } = req.body;
+
+    const submission = new Submission({
+      type,
+      name,
+      email,
+      file: req.file
+        ? {
+            data: req.file.buffer,
+            contentType: req.file.mimetype,
+            name: req.file.originalname,
+          }
+        : null,
+    });
+
+    await submission.save();
+
+    res.status(201).json({
+      message: "Submission successful",
+      submission: {
+        type: submission.type,
+        name: submission.name,
+        email: submission.email,
+        fileName: submission.file?.name,
+      },
+    });
+  } catch (error) {
+    console.error("Submission error:", error);
+    res.status(500).json({
+      message: "Error processing submission",
+      error: error.message,
     });
   }
 });
 
-const upload = multer({ storage });
-
-app.delete('/file/:filename', async (req, res) => {
+// Get all submissions
+app.get("/api/submissions", async (req, res) => {
   try {
-    await gfs.files.deleteOne({ filename: req.params.filename });
-    res.status(200).json({ message: 'File deleted successfully' });
+    const submissions = await Submission.find().sort({ createdAt: -1 });
+    res.json(submissions);
   } catch (error) {
-    console.error('Error deleting file:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Error fetching submissions:", error);
+    res.status(500).json({ message: "Error fetching submissions" });
   }
 });
 
-// @route POST /submit
-// @desc  Save form data to DB
-app.post("/submit", async (req, res) => {
-  console.log("Request Headers:", req.headers); // Log request headers
-  console.log("Request Body:", req.body); // Log request body
-
-  const { name, email, amount, type, attempts, fileId } = req.body;
-  const newFormData = new FormData({
-    name,
-    email,
-    amount,
-    type,
-    attempts,
-    fileId,
-  });
-
-  // @route POST /upload
-  // @desc  Uploads file to DB
-  app.post("/upload", upload.single("file"), (req, res) => {
-    res.json({ file: req.file });
-  });
-
+// Download file endpoint
+app.get("/api/submissions/:id/file", async (req, res) => {
   try {
-    const savedFormData = await newFormData.save();
-    res.json(savedFormData);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.get('/file/:name', async (req, res) => {
-  try {
-    const file = await gfs.files.findOne({ filename: req.params.name });
-    const result = [];
-
-    await gfs.createReadStream(file)
-      .pipe()
-      .on('data', (chunk) => {
-        result.push(chunk);
-      })
-      .on('end', () => {
-        console.log('File fetched successfully');
-        res.send(Buffer.concat(result));
-      }
-      );
-  } catch (error) {
-    console.error('Error getting file:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
-
-app.get('/file/:name', async (req, res) => {
-  try {
-    const file = await gfs.files.findOne({ name: req.params.name });
-    console.log('file: ', file);
-    const readStream = gfs.createReadStream(file.name);
-    readStream.pipe(res);
-  } catch (error) {
-    console.error('Error getting file:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
-
-
-app.post('/file/upload', upload.single('img'), async (req, res) => {
-  if (req.file === undefined) {
-    return res.status(400).json({ message: 'Please upload a file' });
-  }
-
-  const newFile = new fileModel({
-    data: req.file.buffer,
-    contentType: req.file.mimetype,
-  });
-
-  try {
-    await newFile.save();
-    res.status(201).json({ message: 'File uploaded successfully', file: newFile });
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    console.log("req.file: ", req.file);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
-
-// @route GET /file/:filename
-// @desc  Download single file
-app.get("/file/:filename", (req, res) => {
-  gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
-    if (!file || file.length === 0) {
-      return res.status(404).json({
-        err: "No file exists",
-      });
+    const submission = await Submission.findById(req.params.id);
+    if (!submission || !submission.file) {
+      return res.status(404).json({ message: "File not found" });
     }
 
-    // Check if file
-    if (file.contentType === "application/pdf") {
-      // Read output to browser
-      const readstream = gfs.createReadStream(file.filename);
-      readstream.pipe(res);
-    } else {
-      res.status(404).json({
-        err: "Not a PDF",
-      });
-    }
-  });
+    res.set({
+      "Content-Type": submission.file.contentType,
+      "Content-Disposition": `attachment; filename="${submission.file.name}"`,
+    });
+
+    res.send(submission.file.data);
+  } catch (error) {
+    console.error("Error downloading file:", error);
+    res.status(500).json({ message: "Error downloading file" });
+  }
 });
 
-// use env port or default
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// Start server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
+
+module.exports = mongoose.model("Submission", submissionSchema);

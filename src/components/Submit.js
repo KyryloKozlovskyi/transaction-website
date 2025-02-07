@@ -2,80 +2,89 @@ import React, { useState } from "react";
 import { Form, Button, Container } from "react-bootstrap";
 import axios from "axios";
 
-const CORS_ANYWHERE = "https://cors-anywhere.herokuapp.com/";
-const BASE_URL = "https://symmetrical-couscous-6jg77rjvqvq35574-5000.app.github.dev";
-
 const Submit = () => {
   const [formData, setFormData] = useState({
+    type: "person",
     name: "",
     email: "",
-    amount: "",
-    type: "person",
-    attempts: "",
     file: null,
   });
 
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prevState) => ({
+      ...prevState,
       [name]: value,
-    });
+    }));
   };
 
   const handleFileChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prevState) => ({
+      ...prevState,
       file: e.target.files[0],
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
+    setError("");
+
+    // Validation
+    if (!formData.name.trim()) {
+      setError("Name is required");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setError("Email is required");
+      return;
+    }
     if (formData.type === "company" && !formData.file) {
-      alert("Please attach a PDF file.");
+      setError("PDF file is required for company submissions");
       return;
     }
 
-    const data = new FormData();
-    data.append("name", formData.name);
-    data.append("email", formData.email);
-    data.append("amount", formData.amount);
-    data.append("type", formData.type);
-    data.append("attempts", formData.attempts);
-    if (formData.file) {
-      data.append("file", formData.file);
-    }
-
     try {
-      const fileResponse = await axios.post(CORS_ANYWHERE + BASE_URL + "/upload", data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      const fileId = fileResponse.data.file._id;
+      const data = new FormData();
+      data.append("type", formData.type);
+      data.append("name", formData.name);
+      data.append("email", formData.email);
+      if (formData.file) {
+        data.append("file", formData.file);
+      }
 
-      const formResponse = await axios.post(CORS_ANYWHERE + BASE_URL + "/submit", {
-        name: formData.name,
-        email: formData.email,
-        amount: formData.amount,
-        type: formData.type,
-        attempts: formData.attempts,
-        fileId: fileId
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await axios.post(
+        "http://localhost:5000/api/submit",
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
-      });
+      );
 
-      console.log("Form submitted:", formResponse.data);
-    } catch (error) {
-      console.error("Error uploading file:", error);
+      setMessage(response.data.message);
+      setFormData({
+        type: "person",
+        name: "",
+        email: "",
+        file: null,
+      });
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "An error occurred during submission"
+      );
+      console.error("Submission error:", err);
     }
   };
 
   return (
     <Container>
+      {message && <div className="alert alert-success">{message}</div>}
+      {error && <div className="alert alert-danger">{error}</div>}
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="formType">
           <Form.Label>Type</Form.Label>
@@ -109,15 +118,6 @@ const Submit = () => {
                 onChange={handleChange}
               />
             </Form.Group>
-            <Form.Group controlId="formAttempts">
-              <Form.Label>How many times did you attempt the exam?</Form.Label>
-              <Form.Control
-                type="number"
-                name="attempts"
-                value={formData.attempts}
-                onChange={handleChange}
-              />
-            </Form.Group>
           </>
         )}
         {formData.type === "company" && (
@@ -140,15 +140,6 @@ const Submit = () => {
                 onChange={handleChange}
               />
             </Form.Group>
-            <Form.Group controlId="formAmount">
-              <Form.Label>Amount</Form.Label>
-              <Form.Control
-                type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
-              />
-            </Form.Group>
             <Form.Group controlId="formFile">
               <Form.Label>Upload PDF</Form.Label>
               <Form.Control
@@ -158,12 +149,6 @@ const Submit = () => {
                 onChange={handleFileChange}
               />
             </Form.Group>
-            <a
-              href="localhost:5000/file/sample.pdf"
-              download="sample.pdf"
-            >
-              Download Sample PDF
-            </a>
           </>
         )}
         <Button variant="primary" type="submit">
