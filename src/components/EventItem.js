@@ -38,10 +38,10 @@ const EventItem = (props) => {
                         textAlign: "center",
                         fontSize: "1.5em",
                     }
-                }>{props.myEvent.title}</Card.Header>
+                }>{props.myEvent.courseName}</Card.Header>
                 <Card.Body>
                     <p className="d-flex justify-content-center">
-                        {props.myEvent.author} ({props.myEvent.year})
+                        {props.myEvent.venue} ({props.myEvent.date})
                     </p>
                     <blockquote className="blockquote mb-0">
                         <div className="d-flex justify-content-center">
@@ -50,7 +50,7 @@ const EventItem = (props) => {
                                     {/* Event image */}
                                     <img
                                         src={posterUrl}
-                                        alt={props.myEvent.title}
+                                        alt={props.myEvent.courseName}
                                         className="img-fluid"
                                         style={{
                                             maxWidth: "50%",

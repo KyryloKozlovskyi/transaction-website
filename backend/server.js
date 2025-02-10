@@ -12,6 +12,8 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const { Resend } = require('resend');
 
+const eventSchema = require('./models/Event');
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Initialize Express app
@@ -118,6 +120,16 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
       message: "Error processing submission",
       error: error.message,
     });
+  }
+});
+
+app.get("/events", async (req, res) => {
+  try {
+    const events = await eventSchema.find({});
+    res.json({ events: events });
+  } catch (err) {
+    console.error("Error fetching events:", err);
+    res.status(500).json({ message: "Error fetching events" });
   }
 });
 
