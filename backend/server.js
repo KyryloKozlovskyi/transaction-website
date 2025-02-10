@@ -54,7 +54,11 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
   try {
     const { type, name, email } = req.body;
 
-    const submission = new Submission({
+    if (req.file && req.file.mimetype !== 'application/pdf') {
+      return res.status(400).json({ message: "Only PDF files are allowed" });
+    }
+
+    const submission = new submissionSchema({
       type,
       name,
       email,
@@ -119,7 +123,7 @@ app.get("/api/submissions", async (req, res) => {
 // Download file endpoint
 app.get("/api/submissions/:id/file", async (req, res) => {
   try {
-    const submission = await Submission.findById(req.params.id);
+    const submission = await submissionSchema.findById(req.params.id);
     if (!submission || !submission.file) {
       return res.status(404).json({ message: "File not found" });
     }
@@ -140,5 +144,3 @@ app.get("/api/submissions/:id/file", async (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-// module.exports = mongoose.model("Submission", submissionSchema);
