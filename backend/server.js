@@ -13,6 +13,7 @@ const multer = require("multer");
 const { Resend } = require('resend');
 
 const eventSchema = require('./models/Event');
+const submissionSchema = require('./models/Submission');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -47,35 +48,6 @@ mongoose
 // Configure Multer for handling file uploads in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-
-const submissionSchema = new mongoose.Schema(
-  {
-    type: {
-      type: String,
-      required: true,
-      enum: ["person", "company"],
-    },
-    name: {
-      type: String,
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-    },
-    file: {
-      data: Buffer,
-      contentType: String,
-      name: String,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-// Create Submission model
-const Submission = mongoose.model("Submission", submissionSchema);
 
 // Create submission endpoint
 app.post("/api/submit", upload.single("file"), async (req, res) => {
@@ -125,7 +97,7 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
 
 app.get("/events", async (req, res) => {
   try {
-    const events = await eventSchema.find({});
+    const events = await eventSchema.find().sort({date : -1 });
     res.json({ events: events });
   } catch (err) {
     console.error("Error fetching events:", err);
@@ -136,7 +108,7 @@ app.get("/events", async (req, res) => {
 // Get all submissions
 app.get("/api/submissions", async (req, res) => {
   try {
-    const submissions = await Submission.find().sort({ createdAt: -1 });
+    const submissions = await submissionSchema.find().sort({ createdAt: -1 });
     res.json(submissions);
   } catch (error) {
     console.error("Error fetching submissions:", error);
@@ -169,4 +141,4 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-module.exports = mongoose.model("Submission", submissionSchema);
+// module.exports = mongoose.model("Submission", submissionSchema);
