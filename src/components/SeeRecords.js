@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Container, Table, Badge, Button } from "react-bootstrap";
+import { Container, Table, Badge, Button, Form } from "react-bootstrap";
 import axios from "axios";
 
 const SeeRecords = () => {
   const [records, setRecords] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [filterBy, setFilterBy] = useState("date");
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -47,6 +48,20 @@ const SeeRecords = () => {
     }
   };
 
+  const filterRecords = (records, filterBy) => {
+    const filteredRecords = [...records];
+    switch (filterBy) {
+      case "name":
+        return filteredRecords.sort((a, b) => a.name.localeCompare(b.name));
+      case "type":
+        return filteredRecords.sort((a, b) => a.type.localeCompare(b.type));
+      case "date":
+        return filteredRecords.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      default:
+        return filteredRecords;
+    }
+  };
+
   if (loading) {
     return <Container>Loading...</Container>;
   }
@@ -55,9 +70,23 @@ const SeeRecords = () => {
     return <Container className="text-danger">{error}</Container>;
   }
 
+  const filteredRecords = filterRecords(records, filterBy);
+
   return (
     <Container>
-      <h2 className="my-4">Submission Records</h2>
+      <div className="d-flex justify-content-between align-items-center my-4">
+        <h2>Submission Records</h2>
+        <Form.Group style={{ width: "200px" }}>
+          <Form.Select 
+            value={filterBy} 
+            onChange={(e) => setFilterBy(e.target.value)}
+          >
+            <option value="date">Filter by Date</option>
+            <option value="name">Filter by Name</option>
+            <option value="type">Filter by Type</option>
+          </Form.Select>
+        </Form.Group>
+      </div>
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -69,7 +98,7 @@ const SeeRecords = () => {
           </tr>
         </thead>
         <tbody>
-          {records.map((record) => (
+          {filteredRecords.map((record) => (
             <tr key={record._id}>
               <td>
                 <Badge bg={record.type === "person" ? "primary" : "success"}>

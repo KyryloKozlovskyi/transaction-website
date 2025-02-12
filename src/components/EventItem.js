@@ -19,14 +19,6 @@ const EventItem = (props) => {
         console.log("Events:", props.myEvents);
     }, [props.myEvents]);
 
-    // Checks if image was uploaded,
-    // if so, convert to base64 (6-bits per character)
-    // else, use default image URL
-    const posterUrl = props.myEvent.posterImg
-        ? `data:${props.myEvent.posterImg.contentType};base64,${Buffer.from(
-            props.myEvent.posterImg.data).toString("base64")}`
-        : props.myEvent.poster;
-
     // return event information for eventItem
     return (
         /* Bootstrap columns for browse page layout */
