@@ -58,6 +58,7 @@ app.get("/companyform", (req, res) => {
 // Create event
 app.post("/api/events", async (req, res) => {
   try {
+    console.log(req.body);
     const event = new eventSchema(req.body);
     await event.save();
     res.status(201).json(event);

@@ -38,7 +38,7 @@ const EventUpdate = () => {
 
     return (
         <div className="container">
-            <h2>Create New Event</h2>
+            <h2>Update Event</h2>
             <form onSubmit={handleSubmit}>
                 <div>
                     <label>Course Name:</label>

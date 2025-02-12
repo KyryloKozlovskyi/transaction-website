@@ -3,7 +3,7 @@ import Events from "./Events";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const EventsMenu = () => {
+const EventMenu = () => {
 
   // store books as JSON
   const [events, setEvents] = useState([]); // initialise books to null array
@@ -36,4 +36,4 @@ const EventsMenu = () => {
   );
 }
 
-export default EventsMenu;
+export default EventMenu;

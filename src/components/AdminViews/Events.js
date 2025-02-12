@@ -13,7 +13,7 @@ const Events = (props) => {
     return <div className="container mt-5">No events available</div>;
   }
 
-  // Maps the tasks to TaskItem components
+  // Maps the event objects to EventItem components
   return (
     <div className="container mt-5">
       <Row className="g-6">
