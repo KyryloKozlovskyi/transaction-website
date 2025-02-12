@@ -4,8 +4,8 @@ import Home from "./components/Home";
 import About from "./components/About";
 import Footer from "./components/Footer";
 import Submit from "./components/Submit";
-import SeeRecords from "./components/SeeRecords";
-import EventsMenu from "./components/EventsMenu";
+import SeeRecords from "./components/AdminViews/SeeRecords";
+import EventsMenu from "./components/AdminViews/EventsMenu";
 
 function App() {
   return (

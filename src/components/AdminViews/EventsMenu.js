@@ -16,7 +16,7 @@ const EventsMenu = () => {
   // axios get request to get books from database
   function Reload() {
     console.log("Reloading events");
-    axios.get('http://localhost:5000/events')
+    axios.get('http://localhost:5000/api/events')
       .then((response) => {
         // log response
         console.log(response.data.events);

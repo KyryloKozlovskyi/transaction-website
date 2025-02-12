@@ -1,4 +1,3 @@
-
 import React from 'react';
 // necessary inputs
 // Provides linking to other app routes.
@@ -19,6 +18,16 @@ const EventItem = (props) => {
         console.log("Events:", props.myEvents);
     }, [props.myEvents]);
 
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/api/events/${id}`);
+            // Optionally, you can refresh the events list or notify the parent component
+            console.log("Event deleted successfully");
+        } catch (err) {
+            console.error("Error deleting event:", err);
+        }
+    };
+
     // return event information for eventItem
     return (
         /* Bootstrap columns for browse page layout */
@@ -35,36 +44,20 @@ const EventItem = (props) => {
                     <p className="d-flex justify-content-center">
                         {props.myEvent.venue} ({props.myEvent.date})
                     </p>
-                    <blockquote className="blockquote mb-0">
-                        <div className="d-flex justify-content-center">
-                            {posterUrl && (
-                                <div className="d-flex justify-content-center">
-                                    {/* Event image */}
-                                    <img
-                                        src={posterUrl}
-                                        alt={props.myEvent.courseName}
-                                        className="img-fluid"
-                                        style={{
-                                            maxWidth: "50%",
-                                            height: "auto",
-                                            marginBottom: "10px",
-                                        }}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </blockquote>
                 </Card.Body>
                 <Card.Footer>
                     <div className="d-flex justify-content-between">
                         <Link to={"/submit/" + props.myEvent._id}>
                             <Button variant="primary">Enroll</Button>
                         </Link>
+                        <Link to={"/update/" + props.myEvent._id}>
+                            <Button variant="warning">Update</Button>
+                        </Link>
+                        <Button variant="danger" onClick={() => handleDelete(props.myEvent._id)}>Delete</Button>
                     </div>
                 </Card.Footer>
             </Card>
         </Col>
-
     );
 }
 

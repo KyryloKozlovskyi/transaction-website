@@ -55,6 +55,51 @@ app.get("/companyform", (req, res) => {
   res.sendFile(__dirname + '/pdfs/companyform.pdf');
 });
 
+// Create event
+app.post("/api/events", async (req, res) => {
+  try {
+    const event = new eventSchema(req.body);
+    await event.save();
+    res.status(201).json(event);
+  } catch (error) {
+    console.error("Error creating event:", error);
+    res.status(500).json({ message: "Error creating event" });
+  }
+});
+
+// Update event
+app.put("/api/events/:id", async (req, res) => {
+  try {
+    await eventSchema.findByIdAndUpdate(req.params.id, req.body);
+    res.status(204).end();
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({ message: "Error updating event" });
+  }
+});
+
+// Delete event
+app.delete("/api/events/:id", async (req, res) => {
+  try {
+    await eventSchema.findByIdAndDelete(req.params.id);
+    res.status(204).end();
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({ message: "Error deleting event" });
+  }
+});
+
+// Get all events
+app.get("/api/events", async (req, res) => {
+  try {
+    const events = await eventSchema.find().sort({ date: -1 });
+    res.json(events);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({ message: "Error fetching events" });
+  }
+});
+
 // Create submission endpoint
 app.post("/api/submit", upload.single("file"), async (req, res) => {
   try {
@@ -107,16 +152,6 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
       message: "Error processing submission",
       error: error.message,
     });
-  }
-});
-
-app.get("/events", async (req, res) => {
-  try {
-    const events = await eventSchema.find().sort({date : -1 });
-    res.json({ events: events });
-  } catch (err) {
-    console.error("Error fetching events:", err);
-    res.status(500).json({ message: "Error fetching events" });
   }
 });
 
