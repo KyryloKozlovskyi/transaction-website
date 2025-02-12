@@ -114,7 +114,7 @@ const Submit = () => {
               <Form.Control
                 type="email"
                 name="email"
-                value={formData.email}
+                value={formData.email.toLowerCase()}
                 onChange={handleChange}
               />
             </Form.Group>
@@ -136,12 +136,17 @@ const Submit = () => {
               <Form.Control
                 type="email"
                 name="email"
-                value={formData.email}
+                value={formData.email.toLowerCase()}
                 onChange={handleChange}
               />
             </Form.Group>
+            <Form.Group controlId="formDownload">
+            <Button variant="primary" onClick={() => window.open("http://localhost:5000/companyform")}>
+              Download PDF
+            </Button>
+            </Form.Group>
             <Form.Group controlId="formFile">
-              <Form.Label>Upload PDF</Form.Label>
+              <Form.Label>Upload signed PDF</Form.Label>
               <Form.Control
                 type="file"
                 name="file"

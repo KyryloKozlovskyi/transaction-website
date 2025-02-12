@@ -49,6 +49,12 @@ mongoose
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+// get a locally stored pdf file
+app.get("/companyform", (req, res) => {
+  console.log(__dirname);
+  res.sendFile(__dirname + '/pdfs/companyform.pdf');
+});
+
 // Create submission endpoint
 app.post("/api/submit", upload.single("file"), async (req, res) => {
   try {
@@ -63,7 +69,6 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
       return res.status(400).json({ message: "Invalid email address" });
     }
     
-
     const submission = new submissionSchema({
       type,
       name,

@@ -12,6 +12,14 @@ const eventSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true
+    },
+    price: {
+        type: Number,
+        required: true
+    },
+    emailText: {
+        type: String,
+        required: true
     }
 });
 
