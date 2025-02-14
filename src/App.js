@@ -8,6 +8,7 @@ import SeeRecords from "./components/AdminViews/SeeRecords";
 import EventMenu from "./components/AdminViews/EventMenu";
 import EventCreate from "./components/AdminViews/EventCreate.js";
 import EventUpdate from "./components/AdminViews/EventUpdate.js";
+import AdminPanel from "./components/AdminViews/AdminPanel";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/events" element={<EventMenu />} />
         <Route path="/events/create" element={<EventCreate />} />
         <Route path="/events/update/:id" element={<EventUpdate />} />
+        <Route path="/admin" element={<AdminPanel />} />
       </Routes>
       <Footer />
     </Router>

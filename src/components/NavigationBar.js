@@ -14,6 +14,9 @@ const NavigationBar = () => {
           <Nav.Link href="/submit">Submit</Nav.Link>
           <Nav.Link href="/records">Records</Nav.Link>
         </Nav>
+        <Nav>
+          <Nav.Link href="/admin">Admin Panel</Nav.Link>
+        </Nav>
       </Container>
     </Navbar>
   );
