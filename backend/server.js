@@ -10,12 +10,18 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
-const { Resend } = require('resend');
+const { Resend } = require("resend");
 
-const eventSchema = require('./models/Event');
-const submissionSchema = require('./models/Submission');
+const eventSchema = require("./models/Event");
+const submissionSchema = require("./models/Submission");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Authentication
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const auth = require("./middlewares/auth");
+const User = require("./models/User");
 
 // Initialize Express app
 const app = express();
@@ -52,11 +58,11 @@ const upload = multer({ storage: storage });
 // get a locally stored pdf file
 app.get("/companyform", (req, res) => {
   console.log(__dirname);
-  res.sendFile(__dirname + '/pdfs/companyform.pdf');
+  res.sendFile(__dirname + "/pdfs/companyform.pdf");
 });
 
 // Create event
-app.post("/api/events", async (req, res) => {
+app.post("/api/events", auth, async (req, res) => {
   try {
     console.log(req.body);
     const event = new eventSchema(req.body);
@@ -106,15 +112,15 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
   try {
     const { type, name, email } = req.body;
 
-    if (req.file && req.file.mimetype !== 'application/pdf') {
+    if (req.file && req.file.mimetype !== "application/pdf") {
       return res.status(400).json({ message: "Only PDF files are allowed" });
     }
 
     // check if email is valid
-    if (!email.includes('@') || !email.includes('.')) {
+    if (!email.includes("@") || !email.includes(".")) {
       return res.status(400).json({ message: "Invalid email address" });
     }
-    
+
     const submission = new submissionSchema({
       type,
       name,
@@ -134,8 +140,8 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
     await resend.emails.send({
       from: process.env.RESEND_DOMAIN,
       to: email,
-      subject: 'Submission Confirmation',
-      text: `Dear ${name},\n\nThank you for your submission. We have received your ${type} submission successfully.\n\nBest regards,\nYour Company`
+      subject: "Submission Confirmation",
+      text: `Dear ${name},\n\nThank you for your submission. We have received your ${type} submission successfully.\n\nBest regards,\nYour Company`,
     });
 
     res.status(201).json({
@@ -157,7 +163,7 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
 });
 
 // Get all submissions
-app.get("/api/submissions", async (req, res) => {
+app.get("/api/submissions", auth, async (req, res) => {
   try {
     const submissions = await submissionSchema.find().sort({ createdAt: -1 });
     res.json(submissions);
@@ -190,4 +196,29 @@ app.get("/api/submissions/:id/file", async (req, res) => {
 // Start server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
+
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, isAdmin: user.isAdmin },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    res.json({ token });
+  } catch (error) {
+    res.status(500).json({ message: "Login failed" });
+  }
+});
+
+app.get("/api/auth/verify", auth, (req, res) => {
+  res.status(200).json({ message: "Token is valid" });
 });

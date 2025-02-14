@@ -11,8 +11,14 @@ const SeeRecords = () => {
   useEffect(() => {
     const fetchRecords = async () => {
       try {
+        const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:5000/api/submissions"
+          "http://localhost:5000/api/submissions",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         setRecords(response.data);
         setLoading(false);
@@ -28,10 +34,14 @@ const SeeRecords = () => {
 
   const downloadFile = async (id) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         `http://localhost:5000/api/submissions/${id}/file`,
         {
           responseType: "blob",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -56,7 +66,9 @@ const SeeRecords = () => {
       case "type":
         return filteredRecords.sort((a, b) => a.type.localeCompare(b.type));
       case "date":
-        return filteredRecords.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        return filteredRecords.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
       default:
         return filteredRecords;
     }
@@ -77,8 +89,8 @@ const SeeRecords = () => {
       <div className="d-flex justify-content-between align-items-center my-4">
         <h2>Submission Records</h2>
         <Form.Group style={{ width: "200px" }}>
-          <Form.Select 
-            value={filterBy} 
+          <Form.Select
+            value={filterBy}
             onChange={(e) => setFilterBy(e.target.value)}
           >
             <option value="date">Filter by Date</option>
