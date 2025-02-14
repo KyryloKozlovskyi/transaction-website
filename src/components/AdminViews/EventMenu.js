@@ -6,21 +6,25 @@ import axios from "axios";
 const EventMenu = () => {
 
   // store books as JSON
-  const [events, setEvents] = useState([]); // initialise books to null array
+  const [events, setEvents] = useState([]); // initialise events to null array
 
-  // useEffect to load books from database
+  // useEffect to load events from database
   useEffect(() => {
     Reload();
   }, []);
 
-  // axios get request to get books from database
+  // axios get request to get events from database
   function Reload() {
     console.log("Reloading events");
-    axios.get('http://localhost:5000/api/events')
+    axios.get('http://localhost:5000/api/events', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
       .then((response) => {
         // log response
-        console.log(response.data.events);
-        setEvents(response.data.events);
+        console.log(response.data);
+        setEvents(response.data);
       })
       .catch((error) => {
         console.log("Error loading events: ", error);

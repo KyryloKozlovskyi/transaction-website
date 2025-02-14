@@ -74,6 +74,40 @@ app.post("/api/events", auth, async (req, res) => {
   }
 });
 
+/* // Create submission endpoint
+app.post("/api/events", auth, async (req, res) => {
+  try {
+    const { eventName, venue, date, price, emailText } = req.body;
+
+    const event = new eventSchema({
+      eventName,
+      venue,
+      date,
+      price,
+      emailText,
+    });
+
+    await event.save();
+
+    res.status(201).json({
+      message: "Event creation successful",
+      event: {
+        eventName: event.eventName,
+        venue: event.venue,
+        date: event.date,
+        price: event.price,
+        emailText: event.emailText,
+      },
+    });
+  } catch (error) {
+    console.error("Event error:", error);
+    res.status(500).json({
+      message: "Error processing event",
+      error: error.message,
+    });
+  }
+}); */
+
 // Update event
 app.put("/api/events/:id", async (req, res) => {
   try {
@@ -107,6 +141,40 @@ app.get("/api/events", async (req, res) => {
   }
 });
 
+// Update event
+app.put("/api/events/:id", async (req, res) => {
+  try {
+    await eventSchema.findByIdAndUpdate(req.params.id, req.body);
+    res.status(204).end();
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({ message: "Error updating event" });
+  }
+});
+
+// Delete event
+app.delete("/api/events/:id", async (req, res) => {
+  try {
+    await eventSchema.findByIdAndDelete(req.params.id);
+    res.status(204).end();
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({ message: "Error deleting event" });
+  }
+});
+
+// Get all events
+app.get("/api/events", async (req, res) => {
+  try {
+    const events = await eventSchema.find().sort({ date: -1 });
+    console.log(events);
+    res.json(events);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({ message: "Error fetching events" });
+  }
+});
+
 // Create submission endpoint
 app.post("/api/submit", upload.single("file"), async (req, res) => {
   try {
@@ -120,7 +188,6 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
     if (!email.includes("@") || !email.includes(".")) {
       return res.status(400).json({ message: "Invalid email address" });
     }
-
     const submission = new submissionSchema({
       type,
       name,

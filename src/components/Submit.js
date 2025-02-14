@@ -1,14 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Button, Container } from "react-bootstrap";
 import axios from "axios";
 
 const Submit = () => {
+
+  const [events, setEvents] = useState([]);
   const [formData, setFormData] = useState({
     type: "person",
     name: "",
     email: "",
     file: null,
   });
+
+  useEffect(() => {
+
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/events");
+        setEvents(response.data);
+      } catch (err) {
+        console.error("Events fetch error:", err);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -87,6 +105,22 @@ const Submit = () => {
       {error && <div className="alert alert-danger">{error}</div>}
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="formType">
+
+        {/* !!! EVENTS !!! */}
+        <Form.Label>Event</Form.Label>
+          <Form.Control
+            as="select"
+            name="event"
+            value={formData.event}
+            onChange={handleChange}
+          >
+            {events.map((event) => (
+              <option key={event._id} value={event._id}>
+                {event.courseName} - {event.venue} - {event.date}
+              </option>
+            ))}
+          </Form.Control>
+
           <Form.Label>Type</Form.Label>
           <Form.Control
             as="select"
