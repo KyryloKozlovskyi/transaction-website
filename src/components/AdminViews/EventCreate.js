@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const EventCreate = () => {
+
+    const navigate = useNavigate();
+    
     const [formData, setFormData] = useState({
         courseName: '',
         venue: '',
@@ -27,6 +31,8 @@ const EventCreate = () => {
                 },
             });
             console.log('Event created successfully:', response.data);
+            // redirect to admin page
+            navigate('/admin');
         } catch (error) {
             console.error('Error creating event:', error);
         }
