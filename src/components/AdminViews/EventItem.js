@@ -7,6 +7,12 @@ import Col from "react-bootstrap/Col";
 
 const EventItem = ({ myEvent, ReloadData }) => {
   const handleDelete = async (id) => {
+    // Show confirmation popup
+    const confirmDelete = window.confirm("Are you sure you want to delete this event?");
+    if (!confirmDelete) {
+      return; // If user cancels, do nothing
+    }
+
     try {
       await axios.delete(`http://localhost:5000/api/events/${id}`, {
         headers: {
@@ -53,9 +59,6 @@ const EventItem = ({ myEvent, ReloadData }) => {
         </Card.Body>
         <Card.Footer>
           <div className="d-flex justify-content-between">
-            <Link to={"/submit/" + myEvent._id}>
-              <Button variant="primary">Enroll</Button>
-            </Link>
             <Link to={"/update/" + myEvent._id}>
               <Button variant="warning">Update</Button>
             </Link>
