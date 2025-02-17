@@ -60,7 +60,7 @@ const EventItem = ({ myEvent, ReloadData }) => {
         </Card.Body>
         <Card.Footer>
           <div className="d-flex justify-content-between">
-            <Link to={"/update/" + myEvent._id}>
+            <Link to={"/events/update/" + myEvent._id}>
               <Button variant="warning">Update</Button>
             </Link>
             <Button variant="danger" onClick={() => handleDelete(myEvent._id)}>Delete</Button>

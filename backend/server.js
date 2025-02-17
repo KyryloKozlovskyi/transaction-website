@@ -148,6 +148,20 @@ app.delete("/api/events/:id", async (req, res) => {
   }
 });
 
+// get event by id
+app.get("/api/events/:id", async (req, res) => {
+  try {
+    const event = await eventSchema.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    res.json(event);
+  } catch (error) {
+    console.error("Error fetching event:", error);
+    res.status(500).json({ message: "Error fetching event" });
+  }
+});
+
 // Get all events
 app.get("/api/events", async (req, res) => {
   try {
