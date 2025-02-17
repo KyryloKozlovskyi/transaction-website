@@ -8,9 +8,10 @@ import Col from "react-bootstrap/Col";
 const EventItem = ({ myEvent, ReloadData }) => {
   const handleDelete = async (id) => {
     // Show confirmation popup
-    const confirmDelete = window.confirm("Are you sure you want to delete this event?");
+    const confirmDelete = window.confirm("Are you sure you want to delete this event?"
+        + "\nThis will delete submissions associated with this event as well, and cannot be undone.");
     if (!confirmDelete) {
-      return; // If user cancels, do nothing
+      return;
     }
 
     try {

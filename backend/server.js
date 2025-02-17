@@ -124,6 +124,13 @@ app.delete("/api/events/:id", async (req, res) => {
   try {
     await eventSchema.findByIdAndDelete(req.params.id);
     res.status(204).end();
+
+    // Delete all submissions associated with the event
+    try {
+      await submissionSchema.deleteMany({ eventId: req.params.id });
+    } catch (error) {
+      console.error("Error deleting submissions:", error);
+    }
   } catch (error) {
     console.error("Error deleting event:", error);
     res.status(500).json({ message: "Error deleting event" });
