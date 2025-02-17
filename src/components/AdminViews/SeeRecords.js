@@ -20,6 +20,7 @@ const SeeRecords = () => {
             },
           }
         );
+        console.log(response.data);
         setRecords(response.data);
         setLoading(false);
       } catch (err) {

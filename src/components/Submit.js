@@ -26,7 +26,7 @@ const Submit = () => {
     fetchEvents();
   }, []);
 
-  
+
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -67,6 +67,7 @@ const Submit = () => {
 
     try {
       const data = new FormData();
+      data.append("eventId", formData.event);
       data.append("type", formData.type);
       data.append("name", formData.name);
       data.append("email", formData.email);
@@ -104,10 +105,9 @@ const Submit = () => {
       {message && <div className="alert alert-success">{message}</div>}
       {error && <div className="alert alert-danger">{error}</div>}
       <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="formType">
 
-        {/* !!! EVENTS !!! */}
-        <Form.Label>Event</Form.Label>
+        <Form.Group controlId="formEvent">
+          <Form.Label>Event</Form.Label>
           <Form.Control
             as="select"
             name="event"
@@ -116,11 +116,12 @@ const Submit = () => {
           >
             {events.map((event) => (
               <option key={event._id} value={event._id}>
-                {event.courseName} - {event.venue} - {event.date}
+                {event.courseName} - €{event.price}
               </option>
             ))}
           </Form.Control>
-
+        </Form.Group>
+        <Form.Group controlId="formType">
           <Form.Label>Type</Form.Label>
           <Form.Control
             as="select"
@@ -175,9 +176,9 @@ const Submit = () => {
               />
             </Form.Group>
             <Form.Group controlId="formDownload">
-            <Button variant="primary" onClick={() => window.open("http://localhost:5000/companyform")}>
-              Download PDF
-            </Button>
+              <Button variant="primary" onClick={() => window.open("http://localhost:5000/companyform")}>
+                Download PDF
+              </Button>
             </Form.Group>
             <Form.Group controlId="formFile">
               <Form.Label>Upload signed PDF</Form.Label>

@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const submissionSchema = new mongoose.Schema(
     {
+      eventId: {
+        type: String,
+        required: true,
+      },
       type: {
         type: String,
         required: true,

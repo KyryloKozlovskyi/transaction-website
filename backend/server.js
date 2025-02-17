@@ -178,7 +178,7 @@ app.get("/api/events", async (req, res) => {
 // Create submission endpoint
 app.post("/api/submit", upload.single("file"), async (req, res) => {
   try {
-    const { type, name, email } = req.body;
+    const { eventId, type, name, email } = req.body;
 
     if (req.file && req.file.mimetype !== "application/pdf") {
       return res.status(400).json({ message: "Only PDF files are allowed" });
@@ -189,6 +189,7 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
       return res.status(400).json({ message: "Invalid email address" });
     }
     const submission = new submissionSchema({
+      eventId,
       type,
       name,
       email,
@@ -214,6 +215,7 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
     res.status(201).json({
       message: "Submission successful",
       submission: {
+        eventId: submission.eventId,
         type: submission.type,
         name: submission.name,
         email: submission.email,
