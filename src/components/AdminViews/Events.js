@@ -1,4 +1,4 @@
-// necessary inputs
+// necessary imports
 import React from "react";
 import EventItem from "./EventItem";
 import Row from "react-bootstrap/Row";
@@ -21,7 +21,7 @@ const Events = (props) => {
           <EventItem 
             myEvent={event} 
             key={event._id}
-            Reload={props.ReloadData}   
+            ReloadData={props.ReloadData}   
           />
         ))}
       </Row>

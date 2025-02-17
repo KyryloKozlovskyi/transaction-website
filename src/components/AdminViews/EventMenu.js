@@ -4,11 +4,10 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 const EventMenu = () => {
-
-  // store books as JSON
+  // store events as JSON
   const [events, setEvents] = useState([]); // initialise events to null array
 
-  // useEffect to load events from database
+  // refresh page when events change
   useEffect(() => {
     Reload();
   }, []);
