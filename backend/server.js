@@ -108,6 +108,17 @@ app.post("/api/events", auth, async (req, res) => {
   }
 }); */
 
+/* // delete all submissions
+app.delete("/api/submissions", async (req, res) => {
+  try {
+    await submissionSchema.deleteMany();
+    res.status(204).end();
+  } catch (error) {
+    console.error("Error deleting submissions:", error);
+    res.status(500).json({ message: "Error deleting submissions" });
+  }
+}); */
+
 // Update event
 app.put("/api/events/:id", async (req, res) => {
   try {
