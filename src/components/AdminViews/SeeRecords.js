@@ -7,6 +7,19 @@ const SeeRecords = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [filterBy, setFilterBy] = useState("date");
+  const[events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/events");
+        setEvents(response.data);
+      } catch (err) {
+        console.error("Events fetch error:", err);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -70,6 +83,10 @@ const SeeRecords = () => {
         return filteredRecords.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
+      case "event":
+        return filteredRecords.sort(
+          (a, b) => a.eventId.localeCompare(b.eventId)
+        );
       default:
         return filteredRecords;
     }
@@ -97,6 +114,7 @@ const SeeRecords = () => {
             <option value="date">Filter by Date</option>
             <option value="name">Filter by Name</option>
             <option value="type">Filter by Type</option>
+            <option value="type">Filter by Event</option>
           </Form.Select>
         </Form.Group>
       </div>
@@ -104,6 +122,7 @@ const SeeRecords = () => {
         <thead>
           <tr>
             <th>Type</th>
+            <th>Event</th>
             <th>Name</th>
             <th>Email</th>
             <th>File</th>
@@ -117,6 +136,10 @@ const SeeRecords = () => {
                 <Badge bg={record.type === "person" ? "primary" : "success"}>
                   {record.type}
                 </Badge>
+              </td>
+              <td>
+                {events.find((event) => event._id === record.eventId)
+                  ?.courseName}
               </td>
               <td>{record.name}</td>
               <td>{record.email}</td>
