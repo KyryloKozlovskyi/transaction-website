@@ -7,7 +7,7 @@ const SeeRecords = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [filterBy, setFilterBy] = useState("date");
-  const[events, setEvents] = useState([]);
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -127,6 +127,7 @@ const SeeRecords = () => {
             <th>Email</th>
             <th>File</th>
             <th>Submitted At</th>
+            <th>Paid</th>
           </tr>
         </thead>
         <tbody>
@@ -155,7 +156,42 @@ const SeeRecords = () => {
                   "No file"
                 )}
               </td>
-              <td>{new Date(record.createdAt).toLocaleDateString()}</td>
+              <td>
+                {new Date(record.createdAt).toLocaleDateString()}
+              </td>
+              <td>
+                <Form.Check
+                  type="checkbox"
+                  checked={record.paid}
+                  onChange={async () => {
+                    const confirmUpdate = window.confirm(
+                      "Are you sure you want to update the payment status?"
+                    );
+                    if (!confirmUpdate) {
+                      return; // If user cancels, do nothing
+                    }
+                    try {
+                      const token = localStorage.getItem("token");
+                      await axios.patch(
+                        `http://localhost:5000/api/submissions/${record._id}`,
+                        { paid: !record.paid },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+                      setRecords(records.map(r =>
+                        r._id === record._id ? { ...r, paid: !r.paid } : r
+                      ));
+                    } catch (err) {
+                      console.error("Error updating payment status:", err);
+                    }
+                  }}
+                  inline
+                />
+                {record.paid ? (
+                  <Badge bg="success">Paid</Badge>
+                ) : (
+                  <Badge bg="danger">Not Paid</Badge>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

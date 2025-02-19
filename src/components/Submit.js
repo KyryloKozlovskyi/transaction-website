@@ -93,6 +93,7 @@ const Submit = () => {
         name: "",
         email: "",
         file: null,
+        paid: false,
       });
     } catch (err) {
       setError(

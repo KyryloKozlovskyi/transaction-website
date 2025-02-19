@@ -37,7 +37,7 @@ const EventItem = ({ myEvent, ReloadData }) => {
         }}>{myEvent.courseName}</Card.Header>
         <Card.Body>
           <p className="d-flex justify-content-center">
-            {myEvent.venue} ({myEvent.date})
+            {myEvent.venue} ({new Date(myEvent.date).toLocaleDateString()})
           </p>
           <blockquote className="blockquote mb-0">
             <div className="d-flex justify-content-center">

@@ -74,6 +74,24 @@ app.post("/api/events", auth, async (req, res) => {
   }
 });
 
+// protected patch endpoint for submissions to update paid status
+app.patch("/api/submissions/:id", auth, async (req, res) => {
+  try {
+    const submission = await submissionSchema.findById(req.params.id);
+    if (!submission) {
+      return res.status(404).json({ message: "Submission not found" });
+    }
+
+    submission.paid = req.body.paid;
+    await submission.save();
+
+    res.json(submission);
+  } catch (error) {
+    console.error("Error updating submission:", error);
+    res.status(500).json({ message: "Error updating submission" });
+  }
+});
+
 /* // Create submission endpoint
 app.post("/api/events", auth, async (req, res) => {
   try {

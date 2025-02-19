@@ -24,6 +24,11 @@ const submissionSchema = new mongoose.Schema(
         contentType: String,
         name: String,
       },
+      paid: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
     },
     {
       timestamps: true,
