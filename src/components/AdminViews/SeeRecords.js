@@ -113,6 +113,9 @@ const SeeRecords = () => {
       <div className="d-flex justify-content-between align-items-center my-4">
         <h2>Submission Records</h2>
         <div className="d-flex">
+          <Badge bg="primary m-2">
+            Records: {filteredRecords.length}
+          </Badge>
           <Form.Group style={{ width: "200px", marginRight: "10px" }}>
             <Form.Select
               value={filterBy}
