@@ -8,6 +8,7 @@ const SeeRecords = () => {
   const [loading, setLoading] = useState(true);
   const [filterBy, setFilterBy] = useState("date");
   const [events, setEvents] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(""); // State for selected course
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -92,6 +93,11 @@ const SeeRecords = () => {
     }
   };
 
+  const filterByCourse = (records, selectedCourse) => {
+    if (!selectedCourse) return records;
+    return records.filter(record => record.eventId === selectedCourse);
+  };
+
   if (loading) {
     return <Container>Loading...</Container>;
   }
@@ -100,23 +106,38 @@ const SeeRecords = () => {
     return <Container className="text-danger">{error}</Container>;
   }
 
-  const filteredRecords = filterRecords(records, filterBy);
+  const filteredRecords = filterByCourse(filterRecords(records, filterBy), selectedCourse);
 
   return (
     <Container>
       <div className="d-flex justify-content-between align-items-center my-4">
         <h2>Submission Records</h2>
-        <Form.Group style={{ width: "200px" }}>
-          <Form.Select
-            value={filterBy}
-            onChange={(e) => setFilterBy(e.target.value)}
-          >
-            <option value="date">Filter by Date</option>
-            <option value="name">Filter by Name</option>
-            <option value="type">Filter by Type</option>
-            <option value="eventId">Filter by Event</option>
-          </Form.Select>
-        </Form.Group>
+        <div className="d-flex">
+          <Form.Group style={{ width: "200px", marginRight: "10px" }}>
+            <Form.Select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value)}
+            >
+              <option value="date">Filter by Date</option>
+              <option value="name">Filter by Name</option>
+              <option value="type">Filter by Type</option>
+              <option value="eventId">Filter by Event</option>
+            </Form.Select>
+          </Form.Group>
+          <Form.Group style={{ width: "200px" }}>
+            <Form.Select
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+            >
+              <option value="">All Courses</option>
+              {events.map((event) => (
+                <option key={event._id} value={event._id}>
+                  {event.courseName}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </div>
       </div>
       <Table striped bordered hover>
         <thead>
