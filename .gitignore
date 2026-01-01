@@ -20,6 +20,10 @@
 .env.production.local
 backend/.env
 
+# Firebase service account keys (NEVER commit these!)
+backend/serviceAccountKey.json
+**/serviceAccountKey*.json
+
 # misc
 .DS_Store
 .env.local
