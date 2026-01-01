@@ -15,11 +15,13 @@ const EventMenu = () => {
   // axios get request to get events from database
   function Reload() {
     console.log("Reloading events");
-    axios.get('http://localhost:5000/api/events', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
+    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    axios
+      .get(`${apiUrl}/api/events`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
       .then((response) => {
         // log response
         console.log(response.data);
@@ -28,7 +30,7 @@ const EventMenu = () => {
       .catch((error) => {
         console.log("Error loading events: ", error);
       });
-  };
+  }
 
   return (
     // return event list
@@ -37,6 +39,6 @@ const EventMenu = () => {
       <Events myEvents={events} ReloadData={Reload} />
     </div>
   );
-}
+};
 
 export default EventMenu;

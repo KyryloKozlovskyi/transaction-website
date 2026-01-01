@@ -20,7 +20,8 @@ export const AdminProvider = ({ children }) => {
   // Function to verify the token
   const verifyToken = async (token) => {
     try {
-      await axios.get("http://localhost:5000/api/auth/verify", {
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+      await axios.get(`${apiUrl}/api/auth/verify`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setIsAdmin(true);

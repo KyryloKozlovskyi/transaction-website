@@ -13,7 +13,8 @@ const SeeRecords = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/events");
+        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+        const response = await axios.get(`${apiUrl}/api/events`);
         setEvents(response.data);
       } catch (err) {
         console.error("Events fetch error:", err);
@@ -26,14 +27,12 @@ const SeeRecords = () => {
     const fetchRecords = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(
-          "http://localhost:5000/api/submissions",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+        const response = await axios.get(`${apiUrl}/api/submissions`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         console.log(response.data);
         setRecords(response.data);
         setLoading(false);
@@ -50,15 +49,13 @@ const SeeRecords = () => {
   const downloadFile = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `http://localhost:5000/api/submissions/${id}/file`,
-        {
-          responseType: "blob",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+      const response = await axios.get(`${apiUrl}/api/submissions/${id}/file`, {
+        responseType: "blob",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -85,8 +82,8 @@ const SeeRecords = () => {
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
       case "eventId":
-        return filteredRecords.sort(
-          (a, b) => a.eventId.localeCompare(b.eventId)
+        return filteredRecords.sort((a, b) =>
+          a.eventId.localeCompare(b.eventId)
         );
       default:
         return filteredRecords;
@@ -95,7 +92,7 @@ const SeeRecords = () => {
 
   const filterByCourse = (records, selectedCourse) => {
     if (!selectedCourse) return records;
-    return records.filter(record => record.eventId === selectedCourse);
+    return records.filter((record) => record.eventId === selectedCourse);
   };
 
   if (loading) {
@@ -106,16 +103,17 @@ const SeeRecords = () => {
     return <Container className="text-danger">{error}</Container>;
   }
 
-  const filteredRecords = filterByCourse(filterRecords(records, filterBy), selectedCourse);
+  const filteredRecords = filterByCourse(
+    filterRecords(records, filterBy),
+    selectedCourse
+  );
 
   return (
     <Container>
       <div className="d-flex justify-content-between align-items-center my-4">
         <h2>Submission Records</h2>
         <div className="d-flex">
-          <Badge bg="primary m-2">
-            Records: {filteredRecords.length}
-          </Badge>
+          <Badge bg="primary m-2">Records: {filteredRecords.length}</Badge>
           <Form.Group style={{ width: "200px", marginRight: "10px" }}>
             <Form.Select
               value={filterBy}
@@ -163,8 +161,10 @@ const SeeRecords = () => {
                 </Badge>
               </td>
               <td>
-                {events.find((event) => event._id === record.eventId)
-                  ?.courseName}
+                {
+                  events.find((event) => event._id === record.eventId)
+                    ?.courseName
+                }
               </td>
               <td>{record.name}</td>
               <td>{record.email}</td>
@@ -180,9 +180,7 @@ const SeeRecords = () => {
                   "No file"
                 )}
               </td>
-              <td>
-                {new Date(record.createdAt).toLocaleDateString()}
-              </td>
+              <td>{new Date(record.createdAt).toLocaleDateString()}</td>
               <td>
                 <Form.Check
                   type="checkbox"
@@ -196,14 +194,19 @@ const SeeRecords = () => {
                     }
                     try {
                       const token = localStorage.getItem("token");
+                      const apiUrl =
+                        process.env.REACT_APP_API_URL ||
+                        "http://localhost:5000";
                       await axios.patch(
-                        `http://localhost:5000/api/submissions/${record._id}`,
+                        `${apiUrl}/api/submissions/${record._id}`,
                         { paid: !record.paid },
                         { headers: { Authorization: `Bearer ${token}` } }
                       );
-                      setRecords(records.map(r =>
-                        r._id === record._id ? { ...r, paid: !r.paid } : r
-                      ));
+                      setRecords(
+                        records.map((r) =>
+                          r._id === record._id ? { ...r, paid: !r.paid } : r
+                        )
+                      );
                     } catch (err) {
                       console.error("Error updating payment status:", err);
                     }
