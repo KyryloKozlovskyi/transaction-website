@@ -1,35 +1,33 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useAdmin } from "./AdminContext";
 
 // Admin login component
 const Login = () => {
   // State to store the login credentials
   const [credentials, setCredentials] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const [error, setError] = useState(""); // State to store the error message
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // Navigation object to redirect the user
   const { login } = useAdmin(); // Function to update the global state with admin details
 
   // Function to handle the form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      // Send a POST request to the server with the login credentials
-      const response = await axios.post(
-        `${apiUrl}/api/auth/login`,
-        credentials
-      );
-      localStorage.setItem("token", response.data.token);
-      login(response.data.token);
+      await login(credentials.email, credentials.password);
       navigate("/admin");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.message || "Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,14 +37,15 @@ const Login = () => {
       {error && <Alert variant="danger">{error}</Alert>}
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
-          <Form.Label>Username</Form.Label>
+          <Form.Label>Email</Form.Label>
           <Form.Control
-            type="text"
-            value={credentials.username}
+            type="email"
+            value={credentials.email}
             onChange={(e) =>
-              setCredentials({ ...credentials, username: e.target.value })
+              setCredentials({ ...credentials, email: e.target.value })
             }
             required
+            disabled={loading}
           />
         </Form.Group>
         <Form.Group className="mb-3">
@@ -58,9 +57,12 @@ const Login = () => {
               setCredentials({ ...credentials, password: e.target.value })
             }
             required
+            disabled={loading}
           />
         </Form.Group>
-        <Button type="submit">Login</Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </Button>
       </Form>
     </Container>
   );
