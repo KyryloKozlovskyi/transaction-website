@@ -1,30 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Container, Form, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
+import { Container, Form, Button } from "react-bootstrap";
 
 const EventUpdate = () => {
   const { id } = useParams(); // Get the event ID from the URL
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    courseName: '',
-    venue: '',
-    date: '',
-    price: '',
-    emailText: ''
+    courseName: "",
+    venue: "",
+    date: "",
+    price: "",
+    emailText: "",
   });
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     // Fetch the event details
     const fetchEvent = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/events/${id}`);
-        setFormData(response.data);
+        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+        const response = await axios.get(`${apiUrl}/api/events/${id}`);
+        const eventData = response.data;
+        // Format date for date input (YYYY-MM-DD)
+        if (eventData.date) {
+          eventData.date = new Date(eventData.date).toISOString().split("T")[0];
+        }
+        setFormData(eventData);
       } catch (err) {
-        console.error('Error fetching event:', err);
-        setError('Error fetching event details');
+        console.error("Error fetching event:", err);
+        setError("Error fetching event details");
       }
     };
 
@@ -34,25 +40,26 @@ const EventUpdate = () => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.put(`http://localhost:5000/api/events/${id}`, formData, {
+      const token = localStorage.getItem("token");
+      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+      const response = await axios.put(`${apiUrl}/api/events/${id}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log('Event updated successfully:', response.data);
-      setMessage('Event updated successfully');
-      navigate('/admin'); // Redirect to admin page
+      console.log("Event updated successfully:", response.data);
+      setMessage("Event updated successfully");
+      navigate("/admin"); // Redirect to admin page
     } catch (error) {
-      console.error('Error updating event:', error);
-      setError('Error updating event');
+      console.error("Error updating event:", error);
+      setError("Error updating event");
     }
   };
 

@@ -53,7 +53,19 @@ mongoose
 
 // Configure Multer for handling file uploads in memory
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed"));
+    }
+  },
+});
 
 // get a locally stored pdf file
 app.get("/companyform", (req, res) => {
@@ -92,53 +104,8 @@ app.patch("/api/submissions/:id", auth, async (req, res) => {
   }
 });
 
-/* // Create submission endpoint
-app.post("/api/events", auth, async (req, res) => {
-  try {
-    const { eventName, venue, date, price, emailText } = req.body;
-
-    const event = new eventSchema({
-      eventName,
-      venue,
-      date,
-      price,
-      emailText,
-    });
-
-    await event.save();
-
-    res.status(201).json({
-      message: "Event creation successful",
-      event: {
-        eventName: event.eventName,
-        venue: event.venue,
-        date: event.date,
-        price: event.price,
-        emailText: event.emailText,
-      },
-    });
-  } catch (error) {
-    console.error("Event error:", error);
-    res.status(500).json({
-      message: "Error processing event",
-      error: error.message,
-    });
-  }
-}); */
-
-/* // delete all submissions
-app.delete("/api/submissions", async (req, res) => {
-  try {
-    await submissionSchema.deleteMany();
-    res.status(204).end();
-  } catch (error) {
-    console.error("Error deleting submissions:", error);
-    res.status(500).json({ message: "Error deleting submissions" });
-  }
-}); */
-
-// Update event
-app.put("/api/events/:id", async (req, res) => {
+// Update event (protected)
+app.put("/api/events/:id", auth, async (req, res) => {
   try {
     await eventSchema.findByIdAndUpdate(req.params.id, req.body);
     res.status(204).end();
@@ -148,18 +115,15 @@ app.put("/api/events/:id", async (req, res) => {
   }
 });
 
-// Delete event
-app.delete("/api/events/:id", async (req, res) => {
+// Delete event (protected)
+app.delete("/api/events/:id", auth, async (req, res) => {
   try {
     await eventSchema.findByIdAndDelete(req.params.id);
-    res.status(204).end();
 
     // Delete all submissions associated with the event
-    try {
-      await submissionSchema.deleteMany({ eventId: req.params.id });
-    } catch (error) {
-      console.error("Error deleting submissions:", error);
-    }
+    await submissionSchema.deleteMany({ eventId: req.params.id });
+
+    res.status(204).end();
   } catch (error) {
     console.error("Error deleting event:", error);
     res.status(500).json({ message: "Error deleting event" });
@@ -188,28 +152,6 @@ app.get("/api/events", async (req, res) => {
   } catch (error) {
     console.error("Error fetching events:", error);
     res.status(500).json({ message: "Error fetching events" });
-  }
-});
-
-// Update event
-app.put("/api/events/:id", async (req, res) => {
-  try {
-    await eventSchema.findByIdAndUpdate(req.params.id, req.body);
-    res.status(204).end();
-  } catch (error) {
-    console.error("Error updating event:", error);
-    res.status(500).json({ message: "Error updating event" });
-  }
-});
-
-// Delete event
-app.delete("/api/events/:id", async (req, res) => {
-  try {
-    await eventSchema.findByIdAndDelete(req.params.id);
-    res.status(204).end();
-  } catch (error) {
-    console.error("Error deleting event:", error);
-    res.status(500).json({ message: "Error deleting event" });
   }
 });
 
@@ -254,13 +196,18 @@ app.post("/api/submit", upload.single("file"), async (req, res) => {
 
     await submission.save();
 
-    // Send confirmation email
-    await resend.emails.send({
-      from: process.env.RESEND_DOMAIN,
-      to: email,
-      subject: "Submission Confirmation",
-      text: `Dear ${name},\n\nThank you for your submission. We have received your ${type} submission successfully.\n\nBest regards,\nYour Company`,
-    });
+    // Send confirmation email (non-blocking)
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_DOMAIN,
+        to: email,
+        subject: "Submission Confirmation",
+        text: `Dear ${name},\n\nThank you for your submission. We have received your ${type} submission successfully.\n\nBest regards,\nYour Company`,
+      });
+    } catch (emailError) {
+      console.error("Error sending confirmation email:", emailError);
+      // Continue even if email fails - submission is already saved
+    }
 
     res.status(201).json({
       message: "Submission successful",
@@ -292,8 +239,8 @@ app.get("/api/submissions", auth, async (req, res) => {
   }
 });
 
-// Download file endpoint
-app.get("/api/submissions/:id/file", async (req, res) => {
+// Download file endpoint (protected)
+app.get("/api/submissions/:id/file", auth, async (req, res) => {
   try {
     const submission = await submissionSchema.findById(req.params.id);
     if (!submission || !submission.file) {
