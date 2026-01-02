@@ -13,8 +13,19 @@ apiClient.interceptors.request.use(
   async (config) => {
     const user = auth.currentUser;
     if (user) {
-      const token = await user.getIdToken();
-      config.headers.Authorization = `Bearer ${token}`;
+      try {
+        const token = await user.getIdToken();
+        config.headers.Authorization = `Bearer ${token}`;
+        console.log(
+          "API Request with auth:",
+          config.method.toUpperCase(),
+          config.url
+        );
+      } catch (error) {
+        console.error("Error getting Firebase token:", error);
+      }
+    } else {
+      console.warn("No Firebase user logged in for request:", config.url);
     }
     return config;
   },

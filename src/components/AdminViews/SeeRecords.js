@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Table, Badge, Button, Form } from "react-bootstrap";
+import apiClient from "../../utils/api";
 import axios from "axios";
 
 const SeeRecords = () => {
@@ -26,13 +27,7 @@ const SeeRecords = () => {
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-        const response = await axios.get(`${apiUrl}/api/submissions`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await apiClient.get("/api/submissions");
         console.log(response.data);
         setRecords(response.data);
         setLoading(false);
@@ -48,13 +43,8 @@ const SeeRecords = () => {
 
   const downloadFile = async (id) => {
     try {
-      const token = localStorage.getItem("token");
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      const response = await axios.get(`${apiUrl}/api/submissions/${id}/file`, {
+      const response = await apiClient.get(`/api/submissions/${id}/file`, {
         responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -132,7 +122,7 @@ const SeeRecords = () => {
             >
               <option value="">All Courses</option>
               {events.map((event) => (
-                <option key={event._id} value={event._id}>
+                <option key={event.id} value={event.id}>
                   {event.courseName}
                 </option>
               ))}
@@ -154,7 +144,7 @@ const SeeRecords = () => {
         </thead>
         <tbody>
           {filteredRecords.map((record) => (
-            <tr key={record._id}>
+            <tr key={record.id}>
               <td>
                 <Badge bg={record.type === "person" ? "primary" : "success"}>
                   {record.type}
@@ -162,17 +152,17 @@ const SeeRecords = () => {
               </td>
               <td>
                 {
-                  events.find((event) => event._id === record.eventId)
+                  events.find((event) => event.id === record.eventId)
                     ?.courseName
                 }
               </td>
               <td>{record.name}</td>
               <td>{record.email}</td>
               <td>
-                {record.file ? (
+                {record.fileUrl ? (
                   <Button
                     variant="link"
-                    onClick={() => downloadFile(record._id)}
+                    onClick={() => downloadFile(record.id)}
                   >
                     Download PDF
                   </Button>
@@ -193,18 +183,12 @@ const SeeRecords = () => {
                       return; // If user cancels, do nothing
                     }
                     try {
-                      const token = localStorage.getItem("token");
-                      const apiUrl =
-                        process.env.REACT_APP_API_URL ||
-                        "http://localhost:5000";
-                      await axios.patch(
-                        `${apiUrl}/api/submissions/${record._id}`,
-                        { paid: !record.paid },
-                        { headers: { Authorization: `Bearer ${token}` } }
-                      );
+                      await apiClient.patch(`/api/submissions/${record.id}`, {
+                        paid: !record.paid,
+                      });
                       setRecords(
                         records.map((r) =>
-                          r._id === record._id ? { ...r, paid: !r.paid } : r
+                          r.id === record.id ? { ...r, paid: !r.paid } : r
                         )
                       );
                     } catch (err) {

@@ -1,7 +1,7 @@
 // necessary imports
 import Events from "./Events";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../../utils/api";
 
 const EventMenu = () => {
   // store events as JSON
@@ -15,13 +15,8 @@ const EventMenu = () => {
   // axios get request to get events from database
   function Reload() {
     console.log("Reloading events");
-    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-    axios
-      .get(`${apiUrl}/api/events`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+    apiClient
+      .get("/api/events")
       .then((response) => {
         // log response
         console.log(response.data);

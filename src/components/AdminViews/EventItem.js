@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Button from "react-bootstrap/Button";
-import axios from "axios";
+import apiClient from "../../utils/api";
 import Card from "react-bootstrap/Card";
 import Col from "react-bootstrap/Col";
 
@@ -17,12 +17,7 @@ const EventItem = ({ myEvent, ReloadData }) => {
     }
 
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      await axios.delete(`${apiUrl}/api/events/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      await apiClient.delete(`/api/events/${id}`);
       console.log("Event deleted successfully");
       ReloadData(); // Call ReloadData to refresh the events list
     } catch (err) {
@@ -67,10 +62,10 @@ const EventItem = ({ myEvent, ReloadData }) => {
         </Card.Body>
         <Card.Footer>
           <div className="d-flex justify-content-between">
-            <Link to={"/events/update/" + myEvent._id}>
+            <Link to={"/events/update/" + myEvent.id}>
               <Button variant="warning">Update</Button>
             </Link>
-            <Button variant="danger" onClick={() => handleDelete(myEvent._id)}>
+            <Button variant="danger" onClick={() => handleDelete(myEvent.id)}>
               Delete
             </Button>
           </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import apiClient from "../../utils/api";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { Container, Form, Button } from "react-bootstrap";
@@ -47,13 +48,7 @@ const EventUpdate = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("token");
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      const response = await axios.put(`${apiUrl}/api/events/${id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.put(`/api/events/${id}`, formData);
       console.log("Event updated successfully:", response.data);
       setMessage("Event updated successfully");
       navigate("/admin"); // Redirect to admin page

@@ -118,7 +118,7 @@ const Submit = () => {
           >
             <option value="">Select an event</option>
             {events.map((event) => (
-              <option key={event._id} value={event._id}>
+              <option key={event.id} value={event.id}>
                 {event.courseName} - €{event.price}
               </option>
             ))}

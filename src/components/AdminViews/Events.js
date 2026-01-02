@@ -18,15 +18,15 @@ const Events = (props) => {
     <div className="container mt-5">
       <Row className="g-6">
         {props.myEvents.map((event) => (
-          <EventItem 
-            myEvent={event} 
-            key={event._id}
-            ReloadData={props.ReloadData}   
+          <EventItem
+            myEvent={event}
+            key={event.id}
+            ReloadData={props.ReloadData}
           />
         ))}
       </Row>
     </div>
   );
-}
+};
 
 export default Events;

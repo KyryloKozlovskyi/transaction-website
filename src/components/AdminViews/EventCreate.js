@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import axios from "axios";
+import apiClient from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 
 const EventCreate = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     courseName: "",
@@ -22,24 +24,28 @@ const EventCreate = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
     try {
-      const token = localStorage.getItem("token");
-      const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      const response = await axios.post(`${apiUrl}/api/events`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.post("/api/events", formData);
       console.log("Event created successfully:", response.data);
       // redirect to admin page
       navigate("/admin");
     } catch (error) {
       console.error("Error creating event:", error);
+      setError(
+        error.response?.data?.message ||
+          "Failed to create event. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="container mt-4">
+      {error && <div className="alert alert-danger">{error}</div>}
       <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
         <div className="mb-3">
           <label className="form-label">Course Name:</label>
@@ -96,8 +102,8 @@ const EventCreate = () => {
             rows="4"
           ></textarea>
         </div>
-        <button type="submit" className="btn btn-primary">
-          Create Event
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? "Creating..." : "Create Event"}
         </button>
       </form>
     </div>

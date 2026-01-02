@@ -9,6 +9,7 @@ import EventMenu from "./components/AdminViews/EventMenu";
 import EventCreate from "./components/AdminViews/EventCreate.js";
 import EventUpdate from "./components/AdminViews/EventUpdate.js";
 import AdminPanel from "./components/AdminViews/AdminPanel";
+import Diagnostics from "./components/AdminViews/Diagnostics";
 import { AdminProvider } from "./components/AdminViews/AdminContext";
 import ProtectedRoute from "./components/AdminViews/ProtectedRoute";
 import Login from "./components/AdminViews/Login";
@@ -23,6 +24,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/submit" element={<Submit />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/diagnostics" element={<Diagnostics />} />
 
           {/* Protected Admin Routes */}
           <Route
