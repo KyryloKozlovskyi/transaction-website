@@ -30,6 +30,8 @@ backend/.env.local
 backend/.env.development.local
 backend/.env.test.local
 backend/.env.production.local
+src/process.env
+**/process.env
 
 # Firebase
 .firebase/
