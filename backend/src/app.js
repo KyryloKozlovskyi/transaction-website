@@ -1,18 +1,52 @@
 const express = require("express");
+const helmet = require("helmet");
 const cors = require("cors");
 const path = require("path");
 const { corsOptions } = require("./config/cors");
+const { handleError, notFoundHandler } = require("./utils/errorHandler");
+const { apiLimiter } = require("./middlewares/rateLimiter");
+const logger = require("./utils/logger");
 
 // Initialize Express app
 const app = express();
 
-// Middleware
+// Security Middleware
+// Helmet sets various HTTP headers for security
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Allow embedding from different origins
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin requests
+  })
+);
+
+// CORS
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Rate limiting - apply to all routes
+app.use(apiLimiter);
+
+// Body parsing
+app.use(express.json({ limit: "10mb" })); // Limit payload size
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Handle preflight requests
 app.options("*", cors(corsOptions));
+
+// Request logging in development
+if (process.env.NODE_ENV === "development") {
+  app.use((req, res, next) => {
+    logger.debug(`${req.method} ${req.path}`);
+    next();
+  });
+}
 
 // Routes
 const eventsRoutes = require("./routes/events.routes");
@@ -30,26 +64,18 @@ app.get("/companyform", (req, res) => {
 
 // Health check
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", service: "transaction-website-api" });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error("Error:", err);
-
-  if (err.message === "Only PDF files are allowed") {
-    return res.status(400).json({ message: err.message });
-  }
-
-  res.status(500).json({
-    message: "Internal server error",
-    error: process.env.NODE_ENV === "development" ? err.message : undefined,
+  res.json({
+    status: "ok",
+    service: "transaction-website-api",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
   });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
+// 404 handler (must be after all routes)
+app.use(notFoundHandler);
+
+// Global error handler (must be last)
+app.use(handleError);
 
 module.exports = app;

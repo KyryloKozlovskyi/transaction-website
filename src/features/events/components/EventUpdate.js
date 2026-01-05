@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "../../../shared/utils/api";
+import { logger, handleApiError } from "../../../shared";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { Container, Form, Button } from "react-bootstrap";
@@ -30,8 +31,8 @@ const EventUpdate = () => {
         }
         setFormData(eventData);
       } catch (err) {
-        console.error("Error fetching event:", err);
-        setError("Error fetching event details");
+        logger.error("Error fetching event", err, { eventId: id });
+        setError(handleApiError(err, "Error fetching event details"));
       }
     };
 
@@ -49,12 +50,12 @@ const EventUpdate = () => {
     e.preventDefault();
     try {
       const response = await apiClient.put(`/api/events/${id}`, formData);
-      console.log("Event updated successfully:", response.data);
+      logger.info("Event updated successfully", { eventId: id });
       setMessage("Event updated successfully");
       navigate("/admin"); // Redirect to admin page
     } catch (error) {
-      console.error("Error updating event:", error);
-      setError("Error updating event");
+      logger.error("Error updating event", error, { eventId: id });
+      setError(handleApiError(error, "Error updating event"));
     }
   };
 

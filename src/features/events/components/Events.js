@@ -5,9 +5,6 @@ import Row from "react-bootstrap/Row";
 
 // Events holds list of Event objects
 const Events = (props) => {
-  // Log the value of props.myEvents to the console
-  console.log("props.myEvents:", props.myEvents);
-
   // Check if props.myEvents is defined and is an array
   if (!props.myEvents || !Array.isArray(props.myEvents)) {
     return <div className="container mt-5">No events available</div>;

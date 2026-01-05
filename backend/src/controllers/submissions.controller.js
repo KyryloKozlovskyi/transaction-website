@@ -1,4 +1,18 @@
 const { getAdmin } = require("../firebase/admin");
+const logger = require("../utils/logger");
+const { asyncHandler, AppError } = require("../utils/errorHandler");
+const {
+  COLLECTIONS,
+  HTTP_STATUS,
+  ERROR_MESSAGES,
+  SUCCESS_MESSAGES,
+} = require("../config/constants");
+const {
+  mapDocsToArray,
+  createDocument,
+  updateDocument,
+  getDocumentById,
+} = require("../utils/firestoreHelpers");
 const emailService = require("../services/email.service");
 const storageService = require("../services/storage.service");
 
@@ -8,122 +22,101 @@ const db = admin.firestore();
 /**
  * Create submission
  */
-const createSubmission = async (req, res) => {
-  try {
-    const { eventId, type, name, email } = req.body;
+const createSubmission = asyncHandler(async (req, res) => {
+  const { eventId, type, name, email } = req.body;
 
-    // Validate email
-    if (!email.includes("@") || !email.includes(".")) {
-      return res.status(400).json({ message: "Invalid email address" });
-    }
+  let fileUrl = null;
 
-    let fileUrl = null;
+  // Upload file to Firebase Storage if provided
+  if (req.file) {
+    fileUrl = await storageService.uploadFile(req.file);
+    logger.info(`File uploaded: ${req.file.originalname}`);
+  }
 
-    // Upload file to Firebase Storage if provided
-    if (req.file) {
-      fileUrl = await storageService.uploadFile(req.file);
-    }
+  // Save submission to Firestore
+  const submissionData = {
+    eventId,
+    type,
+    name,
+    email,
+    fileUrl,
+    fileName: req.file?.originalname || null,
+    paid: false,
+  };
 
-    // Save submission to Firestore
-    const submissionData = {
+  const newSubmission = await createDocument(
+    COLLECTIONS.SUBMISSIONS,
+    submissionData
+  );
+
+  // Send confirmation email (non-blocking)
+  emailService
+    .sendConfirmationEmail(email, name, type)
+    .then(() => logger.info(`Confirmation email sent to: ${email}`))
+    .catch((err) => logger.error("Email error:", err));
+
+  logger.info(`Submission created: ${newSubmission.id} - ${name} (${type})`);
+  res.status(HTTP_STATUS.CREATED).json({
+    message: SUCCESS_MESSAGES.SUBMISSION_CREATED,
+    submission: {
+      id: newSubmission.id,
       eventId,
       type,
       name,
       email,
-      fileUrl,
-      fileName: req.file?.originalname || null,
-      paid: false,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    };
-
-    const docRef = await db.collection("submissions").add(submissionData);
-
-    // Send confirmation email (non-blocking)
-    emailService
-      .sendConfirmationEmail(email, name, type)
-      .catch((err) => console.error("Email error:", err));
-
-    res.status(201).json({
-      message: "Submission successful",
-      submission: {
-        id: docRef.id,
-        eventId,
-        type,
-        name,
-        email,
-        fileName: req.file?.originalname,
-      },
-    });
-  } catch (error) {
-    console.error("Submission error:", error);
-    res.status(500).json({
-      message: "Error processing submission",
-      error: error.message,
-    });
-  }
-};
+      fileName: req.file?.originalname,
+    },
+  });
+});
 
 /**
  * Get all submissions
  */
-const getAllSubmissions = async (req, res) => {
-  try {
-    const snapshot = await db
-      .collection("submissions")
-      .orderBy("createdAt", "desc")
-      .get();
+const getAllSubmissions = asyncHandler(async (req, res) => {
+  const snapshot = await db
+    .collection(COLLECTIONS.SUBMISSIONS)
+    .orderBy("createdAt", "desc")
+    .get();
 
-    const submissions = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.() || doc.data().createdAt,
-    }));
+  const submissions = mapDocsToArray(snapshot);
 
-    res.json(submissions);
-  } catch (error) {
-    console.error("Error fetching submissions:", error);
-    res.status(500).json({ message: "Error fetching submissions" });
-  }
-};
+  logger.info(`Fetched ${submissions.length} submissions`);
+  res.status(HTTP_STATUS.OK).json(submissions);
+});
 
 /**
  * Update submission paid status
  */
-const updateSubmission = async (req, res) => {
-  try {
-    const { paid } = req.body;
+const updateSubmission = asyncHandler(async (req, res) => {
+  const { paid } = req.body;
 
-    await db.collection("submissions").doc(req.params.id).update({
-      paid,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+  await updateDocument(COLLECTIONS.SUBMISSIONS, req.params.id, { paid });
 
-    const doc = await db.collection("submissions").doc(req.params.id).get();
-    res.json({ id: doc.id, ...doc.data() });
-  } catch (error) {
-    console.error("Error updating submission:", error);
-    res.status(500).json({ message: "Error updating submission" });
-  }
-};
+  const updatedSubmission = await getDocumentById(
+    COLLECTIONS.SUBMISSIONS,
+    req.params.id
+  );
+
+  logger.info(`Submission updated: ${req.params.id} - paid: ${paid}`);
+  res.status(HTTP_STATUS.OK).json(updatedSubmission);
+});
 
 /**
  * Download submission file
  */
-const downloadFile = async (req, res) => {
-  try {
-    const doc = await db.collection("submissions").doc(req.params.id).get();
+const downloadFile = asyncHandler(async (req, res) => {
+  const submission = await getDocumentById(
+    COLLECTIONS.SUBMISSIONS,
+    req.params.id
+  );
 
-    if (!doc.exists || !doc.data().fileUrl) {
-      return res.status(404).json({ message: "File not found" });
-    }
-
-    // Redirect to the file URL
-    res.redirect(doc.data().fileUrl);
-  } catch (error) {
-    console.error("Error downloading file:", error);
-    res.status(500).json({ message: "Error downloading file" });
+  if (!submission.fileUrl) {
+    throw new AppError(ERROR_MESSAGES.FILE_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
-};
+
+  logger.info(`File download: ${req.params.id} - ${submission.fileName}`);
+  res.redirect(submission.fileUrl);
+});
 
 module.exports = {
   createSubmission,

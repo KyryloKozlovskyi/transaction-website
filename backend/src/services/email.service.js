@@ -1,4 +1,5 @@
 const { Resend } = require("resend");
+const logger = require("../utils/logger");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -13,8 +14,9 @@ const sendConfirmationEmail = async (to, name, type) => {
       subject: "Submission Confirmation",
       text: `Dear ${name},\n\nThank you for your submission. We have received your ${type} submission successfully.\n\nBest regards,\nYour Company`,
     });
+    logger.info(`Email sent successfully to ${to}`);
   } catch (error) {
-    console.error("Error sending confirmation email:", error);
+    logger.error("Error sending confirmation email:", error);
     throw error;
   }
 };

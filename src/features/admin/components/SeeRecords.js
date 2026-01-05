@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Table, Badge, Button, Form } from "react-bootstrap";
 import apiClient from "../../../shared/utils/api";
+import { logger, handleApiError } from "../../../shared";
 import axios from "axios";
 
 const SeeRecords = () => {
@@ -18,7 +19,7 @@ const SeeRecords = () => {
         const response = await axios.get(`${apiUrl}/api/events`);
         setEvents(response.data);
       } catch (err) {
-        console.error("Events fetch error:", err);
+        logger.error("Events fetch error", err);
       }
     };
     fetchEvents();
@@ -28,13 +29,16 @@ const SeeRecords = () => {
     const fetchRecords = async () => {
       try {
         const response = await apiClient.get("/api/submissions");
-        console.log(response.data);
+        logger.info("Fetched submissions successfully", {
+          count: response.data.length,
+        });
         setRecords(response.data);
         setLoading(false);
       } catch (err) {
-        setError("Failed to fetch records");
+        const errorMsg = handleApiError(err, "Failed to fetch records");
+        setError(errorMsg);
         setLoading(false);
-        console.error("Error fetching records:", err);
+        logger.error("Error fetching records", err);
       }
     };
 
@@ -55,8 +59,9 @@ const SeeRecords = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      logger.info("File downloaded successfully", { submissionId: id });
     } catch (err) {
-      console.error("Error downloading file:", err);
+      logger.error("Error downloading file", err, { submissionId: id });
     }
   };
 

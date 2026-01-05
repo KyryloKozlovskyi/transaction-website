@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import apiClient from "../../../shared/utils/api";
+import { logger, handleApiError, SUCCESS_MESSAGES } from "../../../shared";
 import { useNavigate } from "react-router-dom";
 
 const EventCreate = () => {
@@ -29,15 +30,16 @@ const EventCreate = () => {
 
     try {
       const response = await apiClient.post("/api/events", formData);
-      console.log("Event created successfully:", response.data);
+      logger.info("Event created successfully", { eventId: response.data.id });
       // redirect to admin page
       navigate("/admin");
     } catch (error) {
-      console.error("Error creating event:", error);
-      setError(
-        error.response?.data?.message ||
-          "Failed to create event. Please try again."
+      logger.error("Error creating event", error);
+      const errorMsg = handleApiError(
+        error,
+        "Failed to create event. Please try again."
       );
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

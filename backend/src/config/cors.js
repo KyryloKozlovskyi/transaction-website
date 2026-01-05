@@ -1,19 +1,51 @@
+const logger = require("../utils/logger");
+
+// Allowed origins based on environment
+const getAllowedOrigins = () => {
+  const origins = [
+    process.env.FRONTEND_URL, // Production frontend URL
+    "http://localhost:3000", // Local development
+    "http://localhost:5000", // Backend itself
+    "http://127.0.0.1:3000",
+  ];
+
+  // Add GitHub Codespaces URLs in development
+  if (process.env.NODE_ENV === "development") {
+    origins.push(/.+\.app\.github\.dev$/); // Allow any GitHub Codespaces URL
+  }
+
+  return origins.filter(Boolean); // Remove undefined values
+};
+
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    const allowedOrigins = getAllowedOrigins();
+
+    // Allow requests with no origin (like mobile apps, Postman, or curl requests)
     if (!origin) {
       return callback(null, true);
     }
 
-    // Allow all GitHub Codespaces URLs and localhost
-    if (
-      origin.includes(".app.github.dev") ||
-      origin.includes("localhost") ||
-      origin.includes("127.0.0.1")
-    ) {
+    // Check if origin is allowed
+    const isAllowed = allowedOrigins.some((allowedOrigin) => {
+      if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return allowedOrigin === origin;
+    });
+
+    if (isAllowed) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow all origins for development
+      // In production, reject unauthorized origins
+      if (process.env.NODE_ENV === "production") {
+        logger.warn(`CORS request blocked from origin: ${origin}`);
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      } else {
+        // In development, allow but log warning
+        logger.warn(`CORS request from non-whitelisted origin: ${origin}`);
+        callback(null, true);
+      }
     }
   },
   credentials: true,

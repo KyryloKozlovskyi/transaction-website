@@ -1,4 +1,5 @@
 const { getAdmin } = require("../firebase/admin");
+const logger = require("../utils/logger");
 
 const admin = getAdmin();
 const bucket = admin.storage().bucket();
@@ -20,6 +21,7 @@ const uploadFile = async (file) => {
   await fileRef.makePublic();
 
   const fileUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+  logger.info(`File uploaded to storage: ${fileName}`);
   return fileUrl;
 };
 
@@ -30,8 +32,9 @@ const deleteFile = async (fileUrl) => {
   try {
     const fileName = fileUrl.split("/").pop();
     await bucket.file(`submissions/${fileName}`).delete();
+    logger.info(`File deleted from storage: ${fileName}`);
   } catch (error) {
-    console.error("Error deleting file:", error);
+    logger.error("Error deleting file:", error);
     throw error;
   }
 };

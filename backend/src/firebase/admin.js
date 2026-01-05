@@ -1,6 +1,7 @@
 const admin = require("firebase-admin");
 const path = require("path");
 const fs = require("fs");
+const logger = require("../utils/logger");
 
 // Initialize Firebase Admin SDK
 const initializeFirebase = () => {
@@ -12,13 +13,13 @@ const initializeFirebase = () => {
 
     // Use service account file if it exists, otherwise use environment variables
     if (fs.existsSync(serviceAccountPath)) {
-      console.log("Using service account file for Firebase initialization");
+      logger.info("Using service account file for Firebase initialization");
       admin.initializeApp({
         credential: admin.credential.cert(require(serviceAccountPath)),
         storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       });
     } else if (process.env.FIREBASE_PRIVATE_KEY) {
-      console.log("Using environment variables for Firebase initialization");
+      logger.info("Using environment variables for Firebase initialization");
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
