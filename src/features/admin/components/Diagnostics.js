@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Card, Badge } from "react-bootstrap";
-import { useAdmin } from "./AdminContext";
+import { useAdmin } from "../../auth/contexts/AdminContext";
 
 const Diagnostics = () => {
   const { isAdmin, user } = useAdmin();

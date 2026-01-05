@@ -1,7 +1,7 @@
 // necessary imports
 import Events from "./Events";
 import { useEffect, useState } from "react";
-import apiClient from "../../utils/api";
+import apiClient from "../../../shared/utils/api";
 
 const EventMenu = () => {
   // store events as JSON

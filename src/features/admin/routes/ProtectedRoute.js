@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useAdmin } from "./AdminContext";
+import { useAdmin } from "../../auth/contexts/AdminContext";
 
 // ProtectedRoute component to protect admin routes from unauthorized access
 const ProtectedRoute = ({ children }) => {

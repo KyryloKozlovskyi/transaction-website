@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import apiClient from "../../utils/api";
-import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
-import { Container, Form, Button } from "react-bootstrap";
+import React, { useState } from "react";
+import apiClient from "../../../shared/utils/api";
+import { useNavigate } from "react-router-dom";
 
-const EventUpdate = () => {
-  const { id } = useParams(); // Get the event ID from the URL
+const EventCreate = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     courseName: "",
     venue: "",
@@ -14,29 +14,6 @@ const EventUpdate = () => {
     price: "",
     emailText: "",
   });
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    // Fetch the event details
-    const fetchEvent = async () => {
-      try {
-        const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-        const response = await axios.get(`${apiUrl}/api/events/${id}`);
-        const eventData = response.data;
-        // Format date for date input (YYYY-MM-DD)
-        if (eventData.date) {
-          eventData.date = new Date(eventData.date).toISOString().split("T")[0];
-        }
-        setFormData(eventData);
-      } catch (err) {
-        console.error("Error fetching event:", err);
-        setError("Error fetching event details");
-      }
-    };
-
-    fetchEvent();
-  }, [id]);
 
   const handleChange = (e) => {
     setFormData({
@@ -47,22 +24,29 @@ const EventUpdate = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+
     try {
-      const response = await apiClient.put(`/api/events/${id}`, formData);
-      console.log("Event updated successfully:", response.data);
-      setMessage("Event updated successfully");
-      navigate("/admin"); // Redirect to admin page
+      const response = await apiClient.post("/api/events", formData);
+      console.log("Event created successfully:", response.data);
+      // redirect to admin page
+      navigate("/admin");
     } catch (error) {
-      console.error("Error updating event:", error);
-      setError("Error updating event");
+      console.error("Error creating event:", error);
+      setError(
+        error.response?.data?.message ||
+          "Failed to create event. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Container className="mt-4">
-      {message && <div className="alert alert-success">{message}</div>}
+    <div className="container mt-4">
       {error && <div className="alert alert-danger">{error}</div>}
-      <Form onSubmit={handleSubmit} className="card p-4 shadow-sm">
+      <form onSubmit={handleSubmit} className="card p-4 shadow-sm">
         <div className="mb-3">
           <label className="form-label">Course Name:</label>
           <input
@@ -85,7 +69,6 @@ const EventUpdate = () => {
             required
           />
         </div>
-
         <div className="mb-3">
           <label className="form-label">Date:</label>
           <input
@@ -119,12 +102,12 @@ const EventUpdate = () => {
             rows="4"
           ></textarea>
         </div>
-        <Button variant="primary" type="submit">
-          Update Event
-        </Button>
-      </Form>
-    </Container>
+        <button type="submit" className="btn btn-primary" disabled={loading}>
+          {loading ? "Creating..." : "Create Event"}
+        </button>
+      </form>
+    </div>
   );
 };
 
-export default EventUpdate;
+export default EventCreate;

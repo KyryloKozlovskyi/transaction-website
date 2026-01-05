@@ -1,18 +1,24 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import NavigationBar from "./components/NavigationBar";
-import Home from "./components/Home";
-import About from "./components/About";
-import Footer from "./components/Footer";
-import Submit from "./components/Submit";
-import SeeRecords from "./components/AdminViews/SeeRecords";
-import EventMenu from "./components/AdminViews/EventMenu";
-import EventCreate from "./components/AdminViews/EventCreate.js";
-import EventUpdate from "./components/AdminViews/EventUpdate.js";
-import AdminPanel from "./components/AdminViews/AdminPanel";
-import Diagnostics from "./components/AdminViews/Diagnostics";
-import { AdminProvider } from "./components/AdminViews/AdminContext";
-import ProtectedRoute from "./components/AdminViews/ProtectedRoute";
-import Login from "./components/AdminViews/Login";
+
+// Shared components
+import NavigationBar from "./shared/components/NavigationBar";
+import Footer from "./shared/components/Footer";
+
+// Pages
+import Home from "./pages/Home";
+import About from "./pages/About";
+
+// Features
+import Submit from "./features/submissions/components/Submit";
+import Login from "./features/auth/components/Login";
+import { AdminProvider } from "./features/auth/contexts/AdminContext";
+import ProtectedRoute from "./features/admin/routes/ProtectedRoute";
+import AdminPanel from "./features/admin/components/AdminPanel";
+import Diagnostics from "./features/admin/components/Diagnostics";
+import SeeRecords from "./features/admin/components/SeeRecords";
+import EventMenu from "./features/events/components/EventMenu";
+import EventCreate from "./features/events/components/EventCreate";
+import EventUpdate from "./features/events/components/EventUpdate";
 
 function App() {
   return (
@@ -20,6 +26,7 @@ function App() {
       <Router>
         <NavigationBar />
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/submit" element={<Submit />} />
@@ -52,7 +59,7 @@ function App() {
             }
           />
           <Route
-            path="/events/create"
+            path="/create"
             element={
               <ProtectedRoute>
                 <EventCreate />
@@ -60,7 +67,7 @@ function App() {
             }
           />
           <Route
-            path="/events/update/:id"
+            path="/update/:id"
             element={
               <ProtectedRoute>
                 <EventUpdate />
