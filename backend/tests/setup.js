@@ -1,27 +1,21 @@
-const { MongoMemoryServer } = require("mongodb-memory-server");
-const mongoose = require("mongoose");
+// Test setup - Using Firebase Firestore (no MongoDB needed)
+// Tests should use Firestore emulator or mocks
 
-let mongoServer;
-
-// Setup before all tests
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
-  await mongoose.connect(mongoUri);
+  // Optional: Set up Firestore emulator
+  // process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080";
+  console.log("Test environment initialized - using Firebase Firestore");
 });
 
 // Cleanup after each test
 afterEach(async () => {
-  const collections = mongoose.connection.collections;
-  for (const key in collections) {
-    await collections[key].deleteMany({});
-  }
+  // Clean up test data if needed
+  // Note: With Firestore, cleanup should be done per test or use emulator
 });
 
 // Teardown after all tests
 afterAll(async () => {
-  await mongoose.disconnect();
-  await mongoServer.stop();
+  console.log("Test cleanup completed");
 });
 
-module.exports = { mongoServer };
+module.exports = {};
