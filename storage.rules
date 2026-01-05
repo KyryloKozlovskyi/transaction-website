@@ -1,0 +1,43 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    function isValidPDF() {
+      return request.resource.contentType == 'application/pdf';
+    }
+    
+    function isFileSizeValid() {
+      return request.resource.size <= 5 * 1024 * 1024; // 5MB limit
+    }
+    
+    // PDF submissions - authenticated users can upload, admins can read all
+    match /submissions/{userId}/{fileName} {
+      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == userId);
+      allow write: if isAuthenticated() && 
+                      request.auth.uid == userId && 
+                      isValidPDF() && 
+                      isFileSizeValid();
+      allow delete: if isAdmin();
+    }
+    
+    // Public assets - read by all, write by admins only
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Admin-only storage
+    match /admin/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

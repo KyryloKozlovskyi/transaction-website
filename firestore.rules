@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Users collection - users can read their own data, admins can read all
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+    
+    // Events collection - read by all, write by admins only
+    match /events/{eventId} {
+      allow read: if true; // Public read access
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Submissions collection - users can create, admins can read all
+    match /submissions/{submissionId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+    
+    // Admin-specific collections
+    match /admin/{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
