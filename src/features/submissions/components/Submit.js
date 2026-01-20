@@ -85,7 +85,7 @@ const Submit = () => {
       }
 
       const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-      const response = await axios.post(`${apiUrl}/api/submit`, data, {
+      const response = await axios.post(`${apiUrl}/api/submissions`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

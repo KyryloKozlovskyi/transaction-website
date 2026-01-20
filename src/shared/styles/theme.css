@@ -48,6 +48,9 @@
   --bg-secondary: #e5e7eb;
   --bg-gradient: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #fce7f3 100%);
 
+  /* Dotted Background Pattern */
+  --dotted-pattern: radial-gradient(circle, #9ca3af 2px, transparent 2px);
+
   /* Border Colors */
   --border-color: #e5e7eb;
   --border-subtle: #e9ecef;
@@ -126,6 +129,9 @@ body {
   font-size: var(--font-size-base);
   color: var(--text-primary);
   background-color: var(--bg-body);
+  background-image: var(--dotted-pattern);
+  background-size: 24px 24px;
+  background-position: 0 0;
   line-height: 1.5;
 }
 
