@@ -1,19 +1,46 @@
-// necessary imports
 import React from "react";
 import EventItem from "./EventItem";
-import Row from "react-bootstrap/Row";
+import { Container, Row, Alert } from "react-bootstrap";
 
-// Events holds list of Event objects
 const Events = (props) => {
-  // Check if props.myEvents is defined and is an array
   if (!props.myEvents || !Array.isArray(props.myEvents)) {
-    return <div className="container mt-5">No events available</div>;
+    return (
+      <Container className="mt-5">
+        <Alert variant="info" className="text-center">
+          <Alert.Heading>No Events Available</Alert.Heading>
+          <p className="mb-0">
+            There are currently no events to display. Check back soon!
+          </p>
+        </Alert>
+      </Container>
+    );
   }
 
-  // Maps the event objects to EventItem components
+  if (props.myEvents.length === 0) {
+    return (
+      <Container className="mt-5">
+        <Alert variant="info" className="text-center">
+          <Alert.Heading>No Events Yet</Alert.Heading>
+          <p className="mb-0">
+            No events have been created yet. Admins can create new events from
+            the admin panel.
+          </p>
+        </Alert>
+      </Container>
+    );
+  }
+
   return (
-    <div className="container mt-5">
-      <Row className="g-6">
+    <Container className="mt-5">
+      <Row className="mb-4">
+        <div className="col text-center">
+          <h2 className="display-2 mb-3">Available Events</h2>
+          <p className="lead text-secondary">
+            Browse our upcoming training courses and events
+          </p>
+        </div>
+      </Row>
+      <Row className="g-4">
         {props.myEvents.map((event) => (
           <EventItem
             myEvent={event}
@@ -22,7 +49,7 @@ const Events = (props) => {
           />
         ))}
       </Row>
-    </div>
+    </Container>
   );
 };
 

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/auth.controller");
-const auth = require("../../middlewares/firebaseAuth");
+const auth = require("../middlewares/firebaseAuth");
 const { authLimiter } = require("../middlewares/rateLimiter");
 
 // Apply auth rate limiter to authentication routes

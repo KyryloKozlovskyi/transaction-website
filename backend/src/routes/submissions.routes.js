@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const submissionsController = require("../controllers/submissions.controller");
-const auth = require("../../middlewares/firebaseAuth");
+const auth = require("../middlewares/firebaseAuth");
 const { upload } = require("../config/multer");
 const {
   validate,
@@ -20,7 +20,7 @@ router.post(
   submissionLimiter,
   upload.single("file"),
   validate(submissionSchema),
-  submissionsController.createSubmission
+  submissionsController.createSubmission,
 );
 
 // Protected admin routes - admin rate limiting
@@ -31,14 +31,14 @@ router.patch(
   adminLimiter,
   validate(idParamSchema, "params"),
   validate(updateSubmissionSchema),
-  submissionsController.updateSubmission
+  submissionsController.updateSubmission,
 );
 router.get(
   "/:id/file",
   auth,
   adminLimiter,
   validate(idParamSchema, "params"),
-  submissionsController.downloadFile
+  submissionsController.downloadFile,
 );
 
 module.exports = router;

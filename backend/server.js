@@ -9,7 +9,7 @@ validateEnvironment();
 const logger = require("./src/utils/logger");
 
 // Initialize Firebase Admin
-const { initializeFirebase } = require("./firebase/admin");
+const { initializeFirebase } = require("./src/firebase/admin");
 initializeFirebase();
 
 // Import app

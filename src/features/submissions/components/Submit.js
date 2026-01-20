@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Container } from "react-bootstrap";
+import { Form, Button, Container, Row, Col, Card } from "react-bootstrap";
 import axios from "axios";
+import Alert from "../../../shared/components/Alert";
+import logger from "../../../shared/utils/logger";
 
 const Submit = () => {
   const [events, setEvents] = useState([]);
@@ -11,6 +13,9 @@ const Submit = () => {
     email: "",
     file: null,
   });
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -18,16 +23,16 @@ const Submit = () => {
         const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
         const response = await axios.get(`${apiUrl}/api/events`);
         setEvents(response.data);
+        logger.info("Events fetched for submission form", {
+          count: response.data.length,
+        });
       } catch (err) {
-        console.error("Events fetch error:", err);
+        logger.error("Events fetch error", { error: err.message });
       }
     };
 
     fetchEvents();
   }, []);
-
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,6 +72,8 @@ const Submit = () => {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const data = new FormData();
       data.append("eventId", formData.eventId);
@@ -84,7 +91,16 @@ const Submit = () => {
         },
       });
 
-      setMessage(response.data.message);
+      setMessage(
+        response.data.message ||
+          "Submission successful! We'll contact you soon.",
+      );
+      logger.info("Submission successful", {
+        type: formData.type,
+        eventId: formData.eventId,
+      });
+
+      // Reset form
       setFormData({
         eventId: "",
         type: "person",
@@ -92,116 +108,291 @@ const Submit = () => {
         email: "",
         file: null,
       });
+
       // Reset file input
       const fileInput = document.querySelector('input[type="file"]');
       if (fileInput) fileInput.value = "";
+
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      setError(
-        err.response?.data?.message || "An error occurred during submission"
-      );
-      console.error("Submission error:", err);
+      const errorMessage =
+        err.response?.data?.message || "An error occurred during submission";
+      setError(errorMessage);
+      logger.error("Submission error", { error: errorMessage });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const selectedEvent = events.find((e) => e.id === formData.eventId);
+
   return (
-    <Container>
-      {message && <div className="alert alert-success">{message}</div>}
-      {error && <div className="alert alert-danger">{error}</div>}
-      <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="formEvent">
-          <Form.Label>Event</Form.Label>
-          <Form.Control
-            as="select"
-            name="eventId" // Change this to match the key in formData
-            value={formData.eventId}
-            onChange={handleChange}
-          >
-            <option value="">Select an event</option>
-            {events.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.courseName} - €{event.price}
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Group>
-        <Form.Group controlId="formType">
-          <Form.Label>Type</Form.Label>
-          <Form.Control
-            as="select"
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-          >
-            <option value="person">Person</option>
-            <option value="company">Company</option>
-          </Form.Control>
-        </Form.Group>
-        {formData.type === "person" && (
-          <>
-            <Form.Group controlId="formName">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
+    <div className="main-content">
+      <Container>
+        <Row className="justify-content-center">
+          <Col lg={8}>
+            {/* Page Header */}
+            <div className="text-center mb-5">
+              <h1 className="display-2 mb-3">Submit Application</h1>
+              <p className="lead text-secondary">
+                Fill out the form below to register for an event
+              </p>
+            </div>
+
+            {/* Alerts */}
+            {message && (
+              <Alert
+                variant="success"
+                message={message}
+                onClose={() => setMessage("")}
+                className="slide-down"
               />
-            </Form.Group>
-            <Form.Group controlId="formEmail">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={formData.email.toLowerCase()}
-                onChange={handleChange}
+            )}
+            {error && (
+              <Alert
+                variant="danger"
+                message={error}
+                onClose={() => setError("")}
+                className="slide-down"
               />
-            </Form.Group>
-          </>
-        )}
-        {formData.type === "company" && (
-          <>
-            <Form.Group controlId="formCompanyName">
-              <Form.Label>Company Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </Form.Group>
-            <Form.Group controlId="formCompanyEmail">
-              <Form.Label>Company Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={formData.email.toLowerCase()}
-                onChange={handleChange}
-              />
-            </Form.Group>
-            <Form.Group controlId="formDownload">
-              <Button
-                variant="primary"
-                onClick={() => window.open("http://localhost:5000/companyform")}
-              >
-                Download PDF
-              </Button>
-            </Form.Group>
-            <Form.Group controlId="formFile">
-              <Form.Label>Upload signed PDF</Form.Label>
-              <Form.Control
-                type="file"
-                name="file"
-                accept="application/pdf"
-                onChange={handleFileChange}
-              />
-            </Form.Group>
-          </>
-        )}
-        <Button variant="primary" type="submit">
-          Submit
-        </Button>
-      </Form>
-    </Container>
+            )}
+
+            {/* Form Card */}
+            <Card className="card-elevated">
+              <Card.Body className="p-4">
+                <Form onSubmit={handleSubmit}>
+                  {/* Event Selection */}
+                  <Form.Group className="form-group">
+                    <Form.Label className="form-label">
+                      Select Event *
+                    </Form.Label>
+                    <Form.Select
+                      name="eventId"
+                      value={formData.eventId}
+                      onChange={handleChange}
+                      required
+                      className="form-control"
+                    >
+                      <option value="">Choose an event...</option>
+                      {events.map((event) => (
+                        <option key={event.id} value={event.id}>
+                          {event.courseName} - €{event.price} (
+                          {new Date(event.date).toLocaleDateString()})
+                        </option>
+                      ))}
+                    </Form.Select>
+                    {selectedEvent && (
+                      <Form.Text className="form-text">
+                        <svg
+                          width="14"
+                          height="14"
+                          fill="currentColor"
+                          className="me-1"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                        </svg>
+                        {selectedEvent.venue}
+                      </Form.Text>
+                    )}
+                  </Form.Group>
+
+                  {/* Type Selection */}
+                  <Form.Group className="form-group">
+                    <Form.Label className="form-label">
+                      Registration Type *
+                    </Form.Label>
+                    <Form.Select
+                      name="type"
+                      value={formData.type}
+                      onChange={handleChange}
+                      className="form-control"
+                    >
+                      <option value="person">Individual</option>
+                      <option value="company">Company</option>
+                    </Form.Select>
+                  </Form.Group>
+
+                  {/* Name Field */}
+                  <Form.Group className="form-group">
+                    <Form.Label className="form-label">
+                      {formData.type === "company"
+                        ? "Company Name"
+                        : "Full Name"}{" "}
+                      *
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder={
+                        formData.type === "company"
+                          ? "Enter company name"
+                          : "Enter your full name"
+                      }
+                      required
+                      maxLength={100}
+                      className="form-control"
+                    />
+                  </Form.Group>
+
+                  {/* Email Field */}
+                  <Form.Group className="form-group">
+                    <Form.Label className="form-label">
+                      {formData.type === "company"
+                        ? "Company Email"
+                        : "Email Address"}{" "}
+                      *
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      value={formData.email.toLowerCase()}
+                      onChange={handleChange}
+                      placeholder={
+                        formData.type === "company"
+                          ? "company@example.com"
+                          : "you@example.com"
+                      }
+                      required
+                      className="form-control"
+                    />
+                    <Form.Text className="form-text">
+                      We'll send confirmation to this email address
+                    </Form.Text>
+                  </Form.Group>
+
+                  {/* Company-specific fields */}
+                  {formData.type === "company" && (
+                    <>
+                      <Card className="mb-4 border-info">
+                        <Card.Body className="bg-info-light">
+                          <h6 className="mb-3">
+                            Company Registration Requirements
+                          </h6>
+                          <ol className="mb-0 ps-3">
+                            <li className="mb-2">
+                              Download the company registration form
+                            </li>
+                            <li className="mb-2">Print and sign the form</li>
+                            <li>Upload the signed PDF below</li>
+                          </ol>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() =>
+                              window.open(
+                                `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/companyform`,
+                              )
+                            }
+                            className="mt-3"
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              fill="currentColor"
+                              className="me-1"
+                              viewBox="0 0 16 16"
+                            >
+                              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+                            </svg>
+                            Download Company Form (PDF)
+                          </Button>
+                        </Card.Body>
+                      </Card>
+
+                      <Form.Group className="form-group">
+                        <Form.Label className="form-label">
+                          Upload Signed PDF *
+                        </Form.Label>
+                        <Form.Control
+                          type="file"
+                          name="file"
+                          accept="application/pdf"
+                          onChange={handleFileChange}
+                          required={formData.type === "company"}
+                          className="form-control"
+                        />
+                        <Form.Text className="form-text">
+                          Maximum file size: 5MB | Format: PDF only
+                        </Form.Text>
+                      </Form.Group>
+                    </>
+                  )}
+
+                  {/* Submit Button */}
+                  <div className="d-grid gap-2 mt-4">
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      type="submit"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <span
+                            className="spinner-border spinner-border-sm me-2"
+                            role="status"
+                            aria-hidden="true"
+                          ></span>
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            className="me-2"
+                            viewBox="0 0 16 16"
+                          >
+                            <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z" />
+                          </svg>
+                          Submit Application
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="mt-3 text-center">
+                    <small className="text-muted">
+                      * Required fields | Your information is secure and will
+                      not be shared
+                    </small>
+                  </div>
+                </Form>
+              </Card.Body>
+            </Card>
+
+            {/* Info Card */}
+            <Card className="mt-4 border-0 bg-light">
+              <Card.Body className="text-center p-4">
+                <p className="mb-2 text-secondary">
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    className="me-2"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                  </svg>
+                  <strong>Need help?</strong>
+                </p>
+                <p className="mb-0 small text-secondary">
+                  If you encounter any issues or have questions, please contact
+                  our support team.
+                </p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

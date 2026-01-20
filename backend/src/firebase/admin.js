@@ -8,7 +8,7 @@ const initializeFirebase = () => {
   if (admin.apps.length === 0) {
     const serviceAccountPath = path.join(
       __dirname,
-      "../serviceAccountKey.json"
+      "../../serviceAccountKey.json",
     );
 
     // Use service account file if it exists, otherwise use environment variables
@@ -32,7 +32,7 @@ const initializeFirebase = () => {
       throw new Error(
         "Firebase credentials not found. Please provide either:\n" +
           "1. backend/serviceAccountKey.json file, or\n" +
-          "2. FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL, and FIREBASE_PROJECT_ID environment variables"
+          "2. FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL, and FIREBASE_PROJECT_ID environment variables",
       );
     }
   }
