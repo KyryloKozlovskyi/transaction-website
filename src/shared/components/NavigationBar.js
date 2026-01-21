@@ -7,29 +7,54 @@ import { useAdmin } from "../../features/auth/contexts/AdminContext";
 const NavigationBar = () => {
   const { isAdmin, logout } = useAdmin();
 
+  const navbarStyle = {
+    backgroundColor: "#1E90FF",
+    borderBottom: "2px solid #FFD700",
+  };
+
+  const brandStyle = {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+  };
+
+  const linkStyle = {
+    color: "#FFFFFF",
+  };
+
+  const buttonPrimaryStyle = {
+    backgroundColor: "#FFD700",
+    borderColor: "#FFD700",
+    color: "#333333",
+  };
+
+  const buttonOutlineStyle = {
+    borderColor: "#FFFFFF",
+    color: "#FFFFFF",
+  };
+
   return (
-    <Navbar bg="primary" data-bs-theme="dark" expand="lg" className="navbar">
+    <Navbar expand="lg" className="navbar" style={navbarStyle}>
       <Container>
-        <Navbar.Brand href="/" className="navbar-brand">
+        <Navbar.Brand href="/" className="navbar-brand" style={brandStyle}>
           <strong>Transaction</strong> Portal
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="main-navbar-nav" />
         <Navbar.Collapse id="main-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link href="/" className="nav-link">
+            <Nav.Link href="/" className="nav-link" style={linkStyle}>
               Home
             </Nav.Link>
-            <Nav.Link href="/about" className="nav-link">
+            <Nav.Link href="/about" className="nav-link" style={linkStyle}>
               About
             </Nav.Link>
-            <Nav.Link href="/submit" className="nav-link">
+            <Nav.Link href="/submit" className="nav-link" style={linkStyle}>
               Submit
             </Nav.Link>
           </Nav>
           <Nav className="align-items-lg-center">
             {isAdmin ? (
               <>
-                <Nav.Link href="/admin" className="nav-link">
+                <Nav.Link href="/admin" className="nav-link" style={linkStyle}>
                   <span className="d-inline-flex align-items-center gap-1">
                     <svg
                       width="16"
@@ -48,12 +73,18 @@ const NavigationBar = () => {
                   size="sm"
                   onClick={logout}
                   className="ms-lg-2"
+                  style={buttonOutlineStyle}
                 >
                   Logout
                 </Button>
               </>
             ) : (
-              <Button variant="outline-light" size="sm" href="/login">
+              <Button
+                variant="primary"
+                size="sm"
+                href="/login"
+                style={buttonPrimaryStyle}
+              >
                 Login
               </Button>
             )}

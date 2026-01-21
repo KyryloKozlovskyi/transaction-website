@@ -1,13 +1,110 @@
+/* Import theme first */
+@import "./shared/styles/theme.css";
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: #333333 !important;
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #fff8dc 50%,
+    #add8e6 100%
+  ) !important;
+  background-attachment: fixed !important;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+/* Extra Bootstrap overrides to ensure colors apply */
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary:not(:disabled):not(.disabled):active {
+  background-color: #ffd700 !important;
+  border-color: #ffd700 !important;
+  color: #333333 !important;
+  box-shadow: none !important;
+}
+
+.btn-primary:hover {
+  background-color: #daa520 !important;
+  border-color: #daa520 !important;
+}
+
+.btn-secondary,
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
+  background-color: #1e90ff !important;
+  border-color: #1e90ff !important;
+  color: #ffffff !important;
+}
+
+.navbar {
+  background-color: #1e90ff !important;
+}
+
+.navbar-brand,
+.navbar .nav-link {
+  color: #ffffff !important;
+}
+
+.navbar .nav-link:hover {
+  color: #ffd700 !important;
+}
+
+.badge.bg-primary {
+  background-color: #ffd700 !important;
+  color: #333333 !important;
+}
+
+.badge.bg-secondary {
+  background-color: #1e90ff !important;
+  color: #ffffff !important;
+}
+
+.card-header {
+  background-color: #1e90ff !important;
+  color: #ffffff !important;
+  border-bottom: none !important;
+}
+
+.form-control:focus {
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.25) !important;
+}
+
+a {
+  color: #1e90ff !important;
+}
+
+a:hover {
+  color: #1873cc !important;
+}
+
+.text-primary {
+  color: #ffd700 !important;
+}
+
+.text-secondary {
+  color: #1e90ff !important;
+}
+
+.bg-primary {
+  background-color: #ffd700 !important;
+  color: #333333 !important;
+}
+
+.bg-secondary {
+  background-color: #1e90ff !important;
+  color: #ffffff !important;
 }

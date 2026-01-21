@@ -3,7 +3,7 @@
 
 /* Global body styling */
 body {
-  background: var(--bg-gradient);
+  background: linear-gradient(135deg, #ffffff 0%, #fff8dc 50%, #add8e6 100%);
   background-attachment: fixed;
   min-height: 100vh;
   position: relative;
@@ -18,7 +18,7 @@ body::before {
   height: 100%;
   background-image: radial-gradient(
     circle,
-    rgba(0, 0, 0, 0.05) 1px,
+    rgba(30, 144, 255, 0.05) 1px,
     transparent 1px
   );
   background-size: 20px 20px;
