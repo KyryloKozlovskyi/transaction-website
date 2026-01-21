@@ -1,4 +1,7 @@
 const { getAdmin } = require("../firebase/admin");
+const logger = require("../utils/logger");
+const { HTTP_STATUS, ERROR_MESSAGES } = require("../config/constants");
+const { AppError } = require("../utils/errorHandler");
 
 // Middleware to verify Firebase ID token and check if user is admin
 const authMiddleware = async (req, res, next) => {
@@ -6,7 +9,9 @@ const authMiddleware = async (req, res, next) => {
     const authHeader = req.header("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "No token provided" });
+      return res
+        .status(HTTP_STATUS.UNAUTHORIZED)
+        .json({ message: ERROR_MESSAGES.NO_TOKEN });
     }
 
     const idToken = authHeader.replace("Bearer ", "");
@@ -17,7 +22,10 @@ const authMiddleware = async (req, res, next) => {
 
     // Check if user has admin claim
     if (!decodedToken.admin) {
-      return res.status(403).json({ message: "Access denied. Admin only." });
+      logger.warn(`Non-admin user attempted access: ${decodedToken.email}`);
+      return res
+        .status(HTTP_STATUS.FORBIDDEN)
+        .json({ message: ERROR_MESSAGES.ADMIN_ONLY });
     }
 
     // Attach user info to request
@@ -29,10 +37,10 @@ const authMiddleware = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("Authentication error:", error);
+    logger.error("Authentication error:", error);
     res
-      .status(401)
-      .json({ message: "Authentication failed", error: error.message });
+      .status(HTTP_STATUS.UNAUTHORIZED)
+      .json({ message: ERROR_MESSAGES.AUTH_FAILED, error: error.message });
   }
 };
 

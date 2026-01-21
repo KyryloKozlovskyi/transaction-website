@@ -1,8 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 // Shared components
-import NavigationBar from "./shared/components/NavigationBar";
-import Footer from "./shared/components/Footer";
+import { NavigationBar, Footer, ErrorBoundary } from "./shared";
 
 // Pages
 import Home from "./pages/Home";
@@ -22,62 +21,66 @@ import EventUpdate from "./features/events/components/EventUpdate";
 
 function App() {
   return (
-    <AdminProvider>
-      <Router>
-        <NavigationBar />
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/submit" element={<Submit />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/diagnostics" element={<Diagnostics />} />
+    <ErrorBoundary name="App">
+      <AdminProvider>
+        <Router>
+          <div className="App">
+            <NavigationBar />
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/submit" element={<Submit />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/diagnostics" element={<Diagnostics />} />
 
-          {/* Protected Admin Routes */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminPanel />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/records"
-            element={
-              <ProtectedRoute>
-                <SeeRecords />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/events"
-            element={
-              <ProtectedRoute>
-                <EventMenu />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/create"
-            element={
-              <ProtectedRoute>
-                <EventCreate />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/update/:id"
-            element={
-              <ProtectedRoute>
-                <EventUpdate />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-        <Footer />
-      </Router>
-    </AdminProvider>
+              {/* Protected Admin Routes */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <AdminPanel />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/records"
+                element={
+                  <ProtectedRoute>
+                    <SeeRecords />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events"
+                element={
+                  <ProtectedRoute>
+                    <EventMenu />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events/create"
+                element={
+                  <ProtectedRoute>
+                    <EventCreate />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events/update/:id"
+                element={
+                  <ProtectedRoute>
+                    <EventUpdate />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+            <Footer />
+          </div>
+        </Router>
+      </AdminProvider>
+    </ErrorBoundary>
   );
 }
 

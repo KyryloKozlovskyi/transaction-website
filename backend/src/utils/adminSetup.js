@@ -1,4 +1,5 @@
 const { getAdmin } = require("../firebase/admin");
+const logger = require("./logger");
 
 // Set admin custom claim for a user
 const setAdminClaim = async (email) => {
@@ -8,10 +9,10 @@ const setAdminClaim = async (email) => {
 
     await admin.auth().setCustomUserClaims(user.uid, { admin: true });
 
-    console.log(`Admin claim set for user: ${email}`);
+    logger.info(`Admin claim set for user: ${email}`);
     return user;
   } catch (error) {
-    console.error("Error setting admin claim:", error);
+    logger.error("Error setting admin claim:", error);
     throw error;
   }
 };
@@ -25,13 +26,13 @@ const createAdminUser = async (email) => {
     let user;
     try {
       user = await admin.auth().getUserByEmail(email);
-      console.log("User already exists:", email);
+      logger.info("User already exists:", email);
     } catch (error) {
       if (error.code === "auth/user-not-found") {
-        console.log(
+        logger.warn(
           "User not found. Please create the user in Firebase Console first."
         );
-        console.log("Then run this script to set admin privileges.");
+        logger.warn("Then run this script to set admin privileges.");
         return null;
       }
       throw error;
@@ -39,11 +40,11 @@ const createAdminUser = async (email) => {
 
     // Set admin claim
     await admin.auth().setCustomUserClaims(user.uid, { admin: true });
-    console.log(`Admin privileges granted to: ${email}`);
+    logger.info(`Admin privileges granted to: ${email}`);
 
     return user;
   } catch (error) {
-    console.error("Error creating admin user:", error);
+    logger.error("Error creating admin user:", error);
     throw error;
   }
 };
