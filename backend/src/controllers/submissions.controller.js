@@ -46,7 +46,7 @@ const createSubmission = asyncHandler(async (req, res) => {
 
   const newSubmission = await createDocument(
     COLLECTIONS.SUBMISSIONS,
-    submissionData
+    submissionData,
   );
 
   // Send confirmation email (non-blocking)
@@ -94,7 +94,7 @@ const updateSubmission = asyncHandler(async (req, res) => {
 
   const updatedSubmission = await getDocumentById(
     COLLECTIONS.SUBMISSIONS,
-    req.params.id
+    req.params.id,
   );
 
   logger.info(`Submission updated: ${req.params.id} - paid: ${paid}`);
@@ -107,15 +107,30 @@ const updateSubmission = asyncHandler(async (req, res) => {
 const downloadFile = asyncHandler(async (req, res) => {
   const submission = await getDocumentById(
     COLLECTIONS.SUBMISSIONS,
-    req.params.id
+    req.params.id,
   );
 
   if (!submission.fileUrl) {
     throw new AppError(ERROR_MESSAGES.FILE_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
   }
 
-  logger.info(`File download: ${req.params.id} - ${submission.fileName}`);
-  res.redirect(submission.fileUrl);
+  try {
+    // Get the file from Firebase Storage
+    const fileBuffer = await storageService.downloadFile(submission.fileUrl);
+
+    // Set headers for file download
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${submission.fileName || "document.pdf"}"`,
+    );
+
+    logger.info(`File download: ${req.params.id} - ${submission.fileName}`);
+    res.send(fileBuffer);
+  } catch (error) {
+    logger.error(`Error downloading file: ${error.message}`);
+    throw new AppError(ERROR_MESSAGES.FILE_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+  }
 });
 
 module.exports = {

@@ -39,7 +39,31 @@ const deleteFile = async (fileUrl) => {
   }
 };
 
+/**
+ * Download file from Firebase Storage
+ */
+const downloadFile = async (fileUrl) => {
+  try {
+    // Extract the file path from the URL
+    const urlParts = fileUrl.split(`${bucket.name}/`);
+    if (urlParts.length < 2) {
+      throw new Error("Invalid file URL");
+    }
+    const filePath = urlParts[1];
+
+    const fileRef = bucket.file(filePath);
+    const [fileBuffer] = await fileRef.download();
+
+    logger.info(`File downloaded from storage: ${filePath}`);
+    return fileBuffer;
+  } catch (error) {
+    logger.error("Error downloading file:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   uploadFile,
   deleteFile,
+  downloadFile,
 };

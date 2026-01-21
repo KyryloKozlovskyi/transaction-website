@@ -1,6 +1,6 @@
 require("dotenv").config();
-const { initializeFirebase } = require("./firebase/admin");
-const { createAdminUser } = require("./utils/adminSetup");
+const { initializeFirebase } = require("../src/firebase/admin");
+const { createAdminUser } = require("../src/utils/adminSetup");
 
 // Initialize Firebase
 initializeFirebase();
