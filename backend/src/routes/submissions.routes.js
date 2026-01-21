@@ -41,4 +41,12 @@ router.get(
   submissionsController.downloadFile,
 );
 
+router.delete(
+  "/:id",
+  auth,
+  adminLimiter,
+  validate(idParamSchema, "params"),
+  submissionsController.deleteSubmission,
+);
+
 module.exports = router;

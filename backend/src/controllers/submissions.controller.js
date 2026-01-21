@@ -133,9 +133,31 @@ const downloadFile = asyncHandler(async (req, res) => {
   }
 });
 
+/**
+ * Delete submission
+ */
+const deleteSubmission = asyncHandler(async (req, res) => {
+  const submission = await getDocumentById(
+    COLLECTIONS.SUBMISSIONS,
+    req.params.id,
+  );
+
+  // Delete associated file from storage if exists
+  if (submission.fileUrl) {
+    await storageService.deleteFile(submission.fileUrl);
+    logger.info(`File deleted for submission: ${req.params.id}`);
+  }
+
+  await db.collection(COLLECTIONS.SUBMISSIONS).doc(req.params.id).delete();
+
+  logger.info(`Submission deleted: ${req.params.id}`);
+  res.status(HTTP_STATUS.NO_CONTENT).send();
+});
+
 module.exports = {
   createSubmission,
   getAllSubmissions,
   updateSubmission,
   downloadFile,
+  deleteSubmission,
 };
