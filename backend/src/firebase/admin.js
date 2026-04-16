@@ -29,11 +29,11 @@ const initializeFirebase = () => {
         storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       });
     } else {
-      throw new Error(
-        "Firebase credentials not found. Please provide either:\n" +
-          "1. backend/serviceAccountKey.json file, or\n" +
-          "2. FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL, and FIREBASE_PROJECT_ID environment variables",
-      );
+      // Use Application Default Credentials (e.g., on Cloud Run)
+      logger.info("Using Application Default Credentials for Firebase initialization");
+      admin.initializeApp({
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      });
     }
   }
   return admin;

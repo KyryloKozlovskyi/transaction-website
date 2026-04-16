@@ -10,6 +10,9 @@ const logger = require("./utils/logger");
 // Initialize Express app
 const app = express();
 
+// Trust proxy (required for Cloud Run / load balancers)
+app.set("trust proxy", 1);
+
 // Security Middleware
 // Helmet sets various HTTP headers for security
 app.use(
