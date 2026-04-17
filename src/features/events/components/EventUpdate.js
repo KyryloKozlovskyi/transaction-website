@@ -156,6 +156,9 @@ const EventUpdate = () => {
                       required
                       className="form-control"
                     />
+                    <Form.Text className="form-text">
+                      Emails will start with &quot;Dear &lt;name&gt;,&quot; followed by this text
+                    </Form.Text>
                   </Form.Group>
 
                   <div className="d-flex gap-3 mt-4">

@@ -49,9 +49,18 @@ const createSubmission = asyncHandler(async (req, res) => {
     submissionData,
   );
 
+  // Fetch event's custom email text
+  let emailText = null;
+  try {
+    const event = await getDocumentById(COLLECTIONS.EVENTS, eventId);
+    emailText = event.emailText || null;
+  } catch (err) {
+    logger.warn(`Could not fetch event ${eventId} for email text:`, err);
+  }
+
   // Send confirmation email (non-blocking)
   emailService
-    .sendConfirmationEmail(email, name, type)
+    .sendConfirmationEmail(email, name, type, emailText)
     .then(() => logger.info(`Confirmation email sent to: ${email}`))
     .catch((err) => logger.error("Email error:", err));
 

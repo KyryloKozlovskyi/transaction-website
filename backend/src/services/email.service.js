@@ -6,13 +6,15 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 /**
  * Send confirmation email
  */
-const sendConfirmationEmail = async (to, name, type) => {
+const sendConfirmationEmail = async (to, name, type, emailText) => {
   try {
+    const defaultText = `Dear ${name},\n\nThank you for your submission. We have received your ${type} submission successfully.\n\nBest regards,\nYour Company`;
+
     await resend.emails.send({
       from: process.env.RESEND_DOMAIN,
       to,
       subject: "Submission Confirmation",
-      text: `Dear ${name},\n\nThank you for your submission. We have received your ${type} submission successfully.\n\nBest regards,\nYour Company`,
+      text: emailText ? `Dear ${name},\n\n${emailText}` : defaultText,
     });
     logger.info(`Email sent successfully to ${to}`);
   } catch (error) {

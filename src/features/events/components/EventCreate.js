@@ -137,7 +137,7 @@ const EventCreate = () => {
                       className="form-control"
                     />
                     <Form.Text className="form-text">
-                      This text will be sent in the confirmation email
+                      Emails will start with &quot;Dear &lt;name&gt;,&quot; followed by this text
                     </Form.Text>
                   </Form.Group>
 
